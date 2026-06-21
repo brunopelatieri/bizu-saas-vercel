@@ -7,7 +7,7 @@ alwaysApply: true
 
 Este projeto é um boilerplate full-stack para iniciar projetos rapidamente com
 metodologia de **AI Software Engineering**: especificação clara, contexto vivo
-para LLMs, arquitetura moderna e deploy em VPS.
+para LLMs, arquitetura moderna e deploy na Vercel.
 
 Tipos de projeto-alvo:
 - SaaS

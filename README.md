@@ -11,29 +11,22 @@ pages, blogs, dashboards/admin e sistemas web de aplicação sem começar do zer
 
 **URL:** [https://bizu.bru.ia.br](https://bizu.bru.ia.br)
 
-> **Nota sobre deploy:** este repositório é focado em **VPS + Docker + Node único**
-> (`react-router-hono-server` + Hono + SSR). A demo pública roda na **Vercel** e
-> exigiu **adaptações de arquitetura** (modelo serverless, não o stack
-> plug-and-play deste repo).
->
-> O caminho natural deste template é **VPS/Docker**. Use a demo como referência
-> visual; para a arquitetura otimizada para Vercel, veja o repositório dedicado:
-> [github.com/brunopelatieri/bizu-saas-vercel](https://github.com/brunopelatieri/bizu-saas-vercel)
+Deploy exclusivo na **Vercel** com React Router v7 Framework Mode, preset
+`@vercel/react-router` e SSR via Vercel Functions.
 
 ## O Que Vem Pronto
 
 - Landing page responsiva, blog com SSR, páginas públicas e meta tags.
 - Login com Supabase Auth e dashboard/admin client-side.
-- API Hono no mesmo processo Node do SSR.
-- Postgres próprio via Drizzle ORM.
+- API Hono no server entry (mesma origem que o SSR).
+- Postgres próprio via Drizzle ORM (connection pooler recomendado).
 - Base visual com shadcn/ui, Tailwind v4, tema claro/escuro e componentes prontos.
 - Estrutura de contexto para agentes de IA entenderem o projeto antes de mexer.
-- Docker preparado para VPS Ubuntu + Docker + Portainer.
 
 ## Resumo Técnico 80/20
 
 ```text
-React Router v7 Framework Mode + SSR global
+React Router v7 + @vercel/react-router (SSR via Functions)
   |
   |-- /api/*              Hono API -> Drizzle -> Postgres
   |-- /, /sobre, /blog    rotas públicas com SSR e SEO
@@ -44,7 +37,7 @@ React Router v7 Framework Mode + SSR global
 Stack principal: **React 19**, **TypeScript**, **React Router v7**, **Vite**,
 **Tailwind v4**, **shadcn/ui**, **Hono**, **Drizzle**, **Postgres**, **Supabase
 Auth/Storage**, **Zod**, **Zustand**, **TanStack Query**, **React Hook Form**,
-**Stripe**, **Nodemailer** e **Docker**.
+**Stripe**, **Nodemailer** e **Vercel**.
 
 ## Metodologia Sugerida
 
@@ -60,20 +53,16 @@ Antes de pedir mudanças para uma IA ou abrir uma feature relevante, leia primei
 - `MIGRATION_NOTES.md` — decisões da migração para React Router Framework Mode.
 - `.specify/memory/constitution.md` — princípios de desenvolvimento SpecifyX.
 
-Regra prática: use o `AI_CONTEXT.md` para entender o projeto em poucos minutos e
-o `PROJECT_TECHNICAL_SPEC.md` quando precisar mexer em arquitetura, rotas,
-deploy, banco ou autenticação.
-
 ## Como Clonar e Rodar
 
 ```bash
-git clone https://github.com/brunopelatieri/bizu-saas.git
-cd bizu-saas
+git clone https://github.com/brunopelatieri/bizu-saas-vercel.git
+cd bizu-saas-vercel
 
 npm install
 cp .env.example .env.local
+# Configure DATABASE_URL (Postgres com pooler) e VITE_SUPABASE_*
 
-docker compose up -d
 npm run db:migrate
 npm run dev
 ```
@@ -84,20 +73,32 @@ App em desenvolvimento:
 http://localhost:5173
 ```
 
-Servidor de produção local:
+## Deploy na Vercel
 
-```bash
-npm run build
-npm run start
-```
+1. Importe o repositório na [Vercel](https://vercel.com).
+2. Framework Preset: **React Router** (detectado automaticamente com o preset).
+3. Node.js: **22.x**.
+4. Configure as variáveis de ambiente (Production e Preview):
 
-Por padrão, o `start` usa `PORT=3000`.
+| Variável | Obrigatória | Observação |
+|----------|-------------|------------|
+| `DATABASE_URL` | Sim | URL **pooled** (Neon, Supabase pooler, PgBouncer) |
+| `DIRECT_URL` | Migrations | Usada localmente/CI com `drizzle-kit` |
+| `VITE_SUPABASE_URL` | Sim | Necessária no build |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Sim | Necessária no build |
+
+5. No Supabase, adicione a URL de produção em **Redirect URLs**:
+   `https://seu-dominio.vercel.app/auth/callback`
+6. Rode migrations contra o Postgres de produção **antes** do primeiro deploy
+   com formulário de contato (`npm run db:migrate` com `DIRECT_URL` apontando
+   para o banco).
+
+Build command: `npm run build` (padrão). Output gerenciado pelo preset Vercel.
 
 ## Variáveis Principais
 
-- `DATABASE_URL` — conexão runtime com Postgres.
+- `DATABASE_URL` — conexão runtime com Postgres (use pooler na Vercel).
 - `DIRECT_URL` — conexão usada pelo Drizzle Kit/migrations.
-- `PORT` — porta do servidor único em produção.
 - `VITE_SUPABASE_URL` — URL pública do projeto Supabase.
 - `VITE_SUPABASE_PUBLISHABLE_KEY` — chave pública do Supabase.
 
@@ -105,8 +106,7 @@ Por padrão, o `start` usa `PORT=3000`.
 
 ```bash
 npm run dev          # dev server: React Router + Hono
-npm run build        # build de produção
-npm run start        # roda build/server/index.js
+npm run build        # build de produção (Vercel)
 npm run typecheck    # typegen + TypeScript
 npm run db:generate  # gera migrations Drizzle
 npm run db:migrate   # aplica migrations
@@ -117,7 +117,7 @@ npm run db:studio    # abre Drizzle Studio
 
 - `AI_CONTEXT.md` — o que faz, para quem é e como agentes devem se orientar.
 - `PROJECT_TECHNICAL_SPEC.md` — arquitetura, stack, rotas, deploy e decisões.
-- `MIGRATION_NOTES.md` — histórico técnico da migração para SSR + Hono.
+- `MIGRATION_NOTES.md` — histórico técnico da migração para SSR + Vercel.
 - `.cursor/rules/` — regras persistentes para agentes no Cursor.
 
 ## Autor

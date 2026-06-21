@@ -37,7 +37,7 @@
 **Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]  
 **Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]  
 **Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]  
-**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
+**Target Platform**: Vercel (React Router v7 + `@vercel/react-router`, serverless Functions)
 **Project Type**: [single/web/mobile - determines source structure]  
 **Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]  
 **Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]  
@@ -91,7 +91,19 @@ specs/[###-feature]/
 
 ### Source Code (repository root)
 ```
-# Option 1: Single project (DEFAULT)
+# Bizu SaaS (DEFAULT — React Router Framework Mode + Vercel)
+src/
+├── api/app.ts           # Hono API (/api/*)
+├── server.ts            # Server entry Web API (Vercel)
+├── routes/              # Route modules (SSR, meta, loaders)
+├── pages/               # Componentes de página (importados pelas routes)
+├── components/
+├── db/                  # Drizzle schema + client
+├── lib/
+├── providers/
+└── root.tsx
+
+# Option 1: Generic single project (SpecifyX default)
 src/
 ├── models/
 ├── services/
@@ -103,30 +115,16 @@ tests/
 ├── integration/
 └── unit/
 
-# Option 2: Web application (when "frontend" + "backend" detected)
+# Option 2: Split frontend/backend (NÃO usar neste repo)
 backend/
-├── src/
-│   ├── models/
-│   ├── services/
-│   └── api/
-└── tests/
-
 frontend/
-├── src/
-│   ├── components/
-│   ├── pages/
-│   └── services/
-└── tests/
 
-# Option 3: Mobile + API (when "iOS/Android" detected)
+# Option 3: Mobile + API
 api/
-└── [same as backend above]
-
 ios/ or android/
-└── [platform-specific structure]
 ```
 
-**Structure Decision**: [DEFAULT to Option 1 unless Technical Context indicates web/mobile app]
+**Structure Decision**: DEFAULT to **Bizu SaaS layout** (`src/routes` + `src/pages` + `src/api` + `src/server.ts`). Não criar pasta `server/` legada nem proxy `/api` no Vite.
 
 ## Phase 0: Outline & Research
 1. **Extract unknowns from Technical Context** above:

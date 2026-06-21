@@ -16,6 +16,7 @@ Given the execution context provided as an argument, do this:
    - Review `plan.md` for phase progress and implementation status
    - Verify `spec.md` contains the feature specification
    - Ensure `.specify/memory/constitution.md` exists for project guidelines
+   - Read `AI_CONTEXT.md` for Bizu SaaS stack (Vercel-only deploy)
 
    **For No-Branch Workflow:**
    - If multiple specs exist on main branch, navigate to the specific spec directory (e.g., `specs/001-feature-name/`)

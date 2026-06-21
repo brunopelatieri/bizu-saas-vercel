@@ -23,6 +23,7 @@ Given the constitution details provided as an argument, do this:
    - If existing principles need modification
    - Whether development guidelines require updates
    - If decision framework needs enhancement
+   - **Preserve** the section **Project Architecture Constraints (Bizu SaaS)** unless explicitly migrating away from Vercel-only deploy
 
 3. **If EXISTING_CONSTITUTION is false**: Create a new constitution file with the following structure:
 

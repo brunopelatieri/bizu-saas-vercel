@@ -9,7 +9,7 @@ const stackBadges = [
   "Drizzle",
   "Supabase",
   "Tailwind v4",
-  "Docker",
+  "Vercel",
 ];
 
 export function HeroSection() {

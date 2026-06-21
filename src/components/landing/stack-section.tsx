@@ -9,7 +9,7 @@ const groups = [
   },
   {
     label: "Backend & API",
-    items: ["Hono", "Zod", "react-router-hono-server", "Nodemailer"],
+    items: ["Hono", "Zod", "@vercel/react-router", "Nodemailer"],
   },
   {
     label: "Dados",
@@ -21,7 +21,7 @@ const groups = [
   },
   {
     label: "Pagamentos & Deploy",
-    items: ["Stripe", "Docker", "VPS + Portainer"],
+    items: ["Stripe", "Vercel", "Fluid compute"],
   },
 ];
 

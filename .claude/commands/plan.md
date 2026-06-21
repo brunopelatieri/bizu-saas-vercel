@@ -27,7 +27,7 @@ Given the implementation details provided as an argument, do this:
    - Success criteria and acceptance criteria
    - Any technical constraints or dependencies mentioned
 
-3. Read the constitution at `.specify/memory/constitution.md` to understand constitutional requirements.
+3. Read the constitution at `.specify/memory/constitution.md` (including **Project Architecture Constraints**) and project context at `AI_CONTEXT.md` + `PROJECT_TECHNICAL_SPEC.md` to understand constitutional and stack requirements.
 
 4. Execute the implementation plan template:
    - Load `.specify/templates/plan-template.j2` (already copied to IMPL_PLAN path)

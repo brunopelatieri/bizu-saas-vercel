@@ -29,7 +29,7 @@ export function CtaSection() {
           </div>
 
           <p className="mt-5 text-sm text-muted-foreground">
-            Open source · Stack moderna · Pronto para VPS com Docker
+            Open source · Stack moderna · Deploy na Vercel
           </p>
         </div>
       </div>

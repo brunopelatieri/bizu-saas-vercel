@@ -1,21 +1,36 @@
-# Migração para React Router v7 — Framework Mode (SSR)
+# Migração para React Router v7 — Framework Mode + Vercel
 
-Este documento descreve a migração do projeto de **React Router v7 em modo SPA
-(Library Mode)** para o **Framework Mode** (que incorpora as capacidades do antigo
-Remix), com **SSR nas rotas públicas** e **área autenticada client-side**,
-servidos por um **único processo Node** (Hono + handler SSR do React Router).
+Este documento descreve a evolução do projeto e o **estado atual** do template:
+
+1. **SPA (Library Mode)** → **Framework Mode** (SSR global, route modules).
+2. **Servidor Node long-running** (`react-router-hono-server`) → **deploy Vercel-only**
+   (`@vercel/react-router` + server entry Web API).
+
+Produção: **https://bizu.bru.ia.br** na Vercel. Repositório:
+**https://github.com/brunopelatieri/bizu-saas-vercel**.
 
 ---
 
 ## 1. Resumo do que mudou
 
+### Histórico (SPA → Framework Mode)
+
 | Antes | Depois |
 |-------|--------|
 | Vite SPA + `index.html` + `main.tsx` + `<BrowserRouter>` em `App.tsx` | Framework Mode com `react-router.config.ts`, `src/root.tsx` e `src/routes.ts` |
-| 2 processos em dev (Vite :5173 + Hono :3001) com proxy `/api` | 1 processo só (`react-router dev`), Hono montado dentro do servidor SSR |
+| 2 processos em dev (Vite :5173 + Hono :3001) com proxy `/api` | 1 processo em dev (`react-router dev`), API e SSR na mesma origem |
 | Sem SSR (crawlers não viam conteúdo) | SSR em runtime nas rotas públicas (`/`, `/blog`, `/blog/:slug`, etc.) |
 | SEO/Open Graph inexistentes | `meta` nativa por rota, incluindo OG dinâmico por post |
-| API Hono em `server/` iniciada por `@hono/node-server` | API Hono em `src/api/app.ts`, montada via `react-router-hono-server` |
+| API Hono em `server/` via `@hono/node-server` | API Hono em `src/api/app.ts` |
+
+### Estado atual (deploy Vercel)
+
+| Antes (fase intermediária) | Agora |
+|----------------------------|-------|
+| `react-router-hono-server` + `node build/server/index.js` | `@vercel/react-router` preset + `src/server.ts` (Web API) |
+| Dockerfile / docker-compose para runtime | Deploy exclusivo na Vercel (sem container da app) |
+| Postgres local via Docker Compose | Postgres gerenciado + **connection pooler** (`DATABASE_URL`) |
+| Script `npm start` | Removido — build via `npm run build`, runtime na Vercel |
 
 > **Importante sobre "SSR por rota":** o React Router v7 **não** possui flag de
 > SSR por rota. O flag `ssr` em `react-router.config.ts` é **global**. Para
@@ -30,136 +45,145 @@ servidos por um **único processo Node** (Hono + handler SSR do React Router).
 ## 2. Decisões tomadas
 
 1. **`ssr: true` global + dashboard client-only.** Atende SEO nas públicas e
-   mantém a área logada sem SSR de dados (sem hidratação de dados sensíveis).
-2. **Integração via `react-router-hono-server`.** Helper maduro e mantido que
-   roda em dev e produção, serve os assets e delega o SSR ao React Router —
-   tudo em um processo só (ideal para VPS + Docker).
-3. **Blog estático por enquanto.** O conteúdo vive em `src/lib/content/posts.ts`.
-   Os `loader`s já leem dele; quando o blog for para o banco, basta trocar o
-   corpo de `getAllPosts`/`getPostBySlug` por queries Drizzle — a assinatura
-   pública não muda e os loaders continuam acessando o banco **direto** (sem
-   volta de rede HTTP), pois rodam no mesmo processo Node.
+   mantém a área logada sem SSR de dados sensíveis.
+2. **Preset `@vercel/react-router`.** Bundle splitting e manifest em
+   `.vercel/react-router-build-result.json` para Functions na Vercel.
+3. **Server entry Web API (`src/server.ts`).** Hono montado em `/api`; demais
+   rotas delegadas ao `createRequestHandler` do React Router — compatível com
+   Vercel Functions (Fluid compute).
+4. **Blog estático por enquanto.** Conteúdo em `src/lib/content/posts.ts`.
+   Os `loader`s leem dele; ao migrar para o banco, troque o corpo de
+   `getAllPosts`/`getPostBySlug` por queries Drizzle — os loaders rodam no
+   runtime server-side (Vercel Function), sem volta HTTP interna.
+5. **Postgres serverless.** `src/db/index.ts` usa pool enxuto (`max: 1`);
+   `DATABASE_URL` em produção deve apontar para pooler (Neon, Supabase pooler,
+   PgBouncer).
 
 ---
 
-## 3. Arquivos criados
+## 3. Arquivos principais
 
-- `react-router.config.ts` — `appDirectory: "src"`, `ssr: true`.
-- `src/root.tsx` — documento raiz (`<html>`, `<head>` com `<Meta/>`/`<Links/>`),
-  fontes (Inter + Manrope), import do CSS, `AuthProvider`, `ErrorBoundary` (404).
-- `src/routes.ts` — configuração de rotas (substitui o JSX `<Routes>`).
-- `src/server.ts` — entry do servidor (`createHonoServer`), monta o `/api/*`.
-- `src/api/app.ts` — app Hono com `/api/health` e `/api/contact` (Drizzle).
-- `src/routes/*.tsx` — route modules com `export default` + `meta`:
-  `home`, `about`, `projects`, `contact`, `login`, `auth-callback`,
-  `dashboard`, `dashboard.coming-soon`, `blog`, `blog-post`.
-- `src/lib/content/posts.ts` — fonte de dados do blog (estático por ora).
-- `src/lib/constants/dashboard-nav.ts` — mapa de títulos do dashboard.
-- `Dockerfile` + `.dockerignore` — build multi-stage para VPS.
+- `react-router.config.ts` — `appDirectory: "src"`, `ssr: true`, `presets: [vercelPreset()]`.
+- `vite.config.ts` — `reactRouter()`; `rollupOptions.input: "./src/server.ts"` no build SSR.
+- `src/server.ts` — entry Web API: `app.route("/api", api)` + `createRequestHandler`.
+- `src/api/app.ts` — Hono com `/health` e `/contact` (montados em `/api/*`).
+- `src/root.tsx` — documento raiz, `<Meta/>`, providers, tema anti-flash.
+- `src/routes.ts` + `src/routes/*.tsx` — route modules (`meta`, `loader` quando necessário).
+- `src/pages/*.tsx` — componentes de página importados pelas routes (sem alteração estrutural).
+- `src/lib/content/posts.ts` — fonte estática do blog.
 
-## 4. Arquivos modificados
+**Removidos (Vercel-only):** `Dockerfile`, `.dockerignore`, `docker-compose.yml`,
+`react-router-hono-server`, `@hono/node-server`, script `npm start`.
 
-- `vite.config.ts` — plugins `reactRouterHonoServer()` + `reactRouter()` +
-  `tailwindcss()`; **proxy `/api` removido** (mesma origem agora).
-- `package.json` — scripts (`dev`/`build`/`start`/`typecheck`) e dependências.
+---
+
+## 4. Arquivos modificados na migração Framework Mode
+
+- `package.json` — scripts `dev` / `build` / `typecheck`; dependência `@vercel/react-router`.
 - `tsconfig.app.json` — `rootDirs` + include de `.react-router/types`.
-- `tsconfig.node.json` — include passa a apontar para os configs node-side.
-- `src/components/layout/root-layout.tsx` e `.../dashboard-layout.tsx` e
-  `src/components/auth/protected-route.tsx` — agora exportam `default`
-  (usados como `layout()`/rota) e importam de `react-router`.
-- `src/lib/constants/navigation.ts` — item "Blog" adicionado ao menu.
-- Todos os imports `react-router-dom` → `react-router` (~14 arquivos).
-- `src/components/landing/faq-section.tsx` — removida diretiva `"use client"`.
+- `tsconfig.node.json` — configs node-side.
+- Layouts e `protected-route.tsx` — export `default`, imports de `react-router`.
+- Imports `react-router-dom` → `react-router` (~14 arquivos).
+- Componentes de landing — copy alinhada ao stack Vercel (fora de `src/pages/`).
 
-## 5. Arquivos removidos
+---
 
-- `index.html`, `src/main.tsx`, `src/App.tsx` (substituídos pelo Framework Mode).
+## 5. Arquivos removidos (legado SPA / server/)
+
+- `index.html`, `src/main.tsx`, `src/App.tsx`
 - `server/main.ts`, `server/index.ts`, `server/routes/contact.ts`
-  (lógica movida para `src/api/app.ts` + `src/server.ts`).
+
+---
 
 ## 6. Dependências
 
-**Adicionadas:** `@react-router/dev` (dev), `@react-router/node`,
-`react-router` (principal), `react-router-hono-server`, `isbot`, `dotenv`.
+**Adicionadas:** `@react-router/dev` (dev), `@react-router/node`, `react-router`,
+`@vercel/react-router`, `isbot`, `dotenv`.
 
-**Removidas:** `react-router-dom` (substituído por `react-router`),
-`concurrently` e `tsx` (não há mais 2 processos em dev).
+**Removidas:** `react-router-hono-server`, `@hono/node-server`, `react-router-dom`,
+`concurrently`, `tsx`.
 
 ---
 
-## 7. CORS
+## 7. CORS e mesma origem
 
-O middleware de CORS foi **removido**: como o front e a API passam a ser
-servidos pelo mesmo processo/origem, não há requisição cross-origin. Se um dia
-a API for exposta a outra origem (ex.: app mobile), reintroduza o `cors()` do
-Hono apenas nas rotas necessárias dentro de `src/api/app.ts`.
+Front e API compartilham origem via `src/server.ts` — não há proxy `/api` no Vite
+e não há CORS em dev/produção. Se a API for exposta a outra origem (ex.: app
+mobile), reintroduza `cors()` do Hono apenas nas rotas necessárias em
+`src/api/app.ts`.
 
 ---
 
 ## 8. Comandos
 
 ```bash
-# Desenvolvimento (1 processo: SSR + API + HMR)
+# Desenvolvimento local (SSR + API + HMR — mesmo entry que produção)
 npm run dev
 
 # Type-check (gera tipos das rotas e roda tsc)
 npm run typecheck
 
-# Build de produção (gera build/client e build/server)
+# Build de produção (artefatos + .vercel/react-router-build-result.json)
 npm run build
 
-# Rodar a build de produção localmente
-# (NODE_ENV=production faz o server ignorar o .env.local e usar env do ambiente)
-NODE_ENV=production PORT=3000 node build/server/index.js
-# Windows PowerShell:
-#   $env:NODE_ENV="production"; $env:PORT="3000"; node build/server/index.js
+# Migrations (local/CI — não roda no deploy Vercel)
+npm run db:migrate
 ```
+
+App em dev: **http://localhost:5173**
 
 ---
 
-## 9. Passos manuais necessários
+## 9. Variáveis de ambiente
 
-1. **Reinicie o dev server.** O script `dev` mudou (não usa mais `concurrently`).
-   Pare o `npm run dev` antigo e rode novamente — agora é um processo só.
-2. **Variáveis de ambiente.** Continuam as mesmas:
-   - `DATABASE_URL` — usado pela API (Drizzle) em runtime.
-   - `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY` — Auth/Storage no client.
-   - `DIRECT_URL` — usado pelo `drizzle.config.ts` (migrations).
-   - Em produção (Docker), injete `DATABASE_URL` (e `PORT`, opcional) no container.
-3. **Não há mais `/api` proxy.** Chamadas `fetch("/api/...")` continuam iguais no
-   código, mas agora resolvem no mesmo servidor (sem o proxy do Vite).
-4. **Favicon:** como o `index.html` foi removido, se quiser um favicon adicione
-   um `<link rel="icon">` no `links` de `src/root.tsx` e o arquivo em `public/`.
+| Variável | Onde | Uso |
+|----------|------|-----|
+| `DATABASE_URL` | Vercel + `.env.local` | Runtime Drizzle — use URL **pooled** na Vercel |
+| `DIRECT_URL` | local/CI | `drizzle-kit` migrations |
+| `VITE_SUPABASE_URL` | Vercel (build) | Auth/Storage no client |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Vercel (build) | Auth/Storage no client |
+
+Em dev, copie `.env.example` → `.env.local`. Na Vercel, configure no painel
+(Production + Preview).
 
 ---
 
-## 10. Deploy (VPS + Docker + Portainer)
+## 10. Deploy (Vercel)
 
-Demo em **https://bizu.bru.ia.br** (Vercel). Repositório Vercel: **https://github.com/brunopelatieri/bizu-saas-vercel**. Este repo principal: VPS + Docker + Node único.
+### Checklist
 
-```bash
-docker build -t bizu-saas .
-docker run -d --name bizu-saas \
-  -p 3000:3000 \
-  -e DATABASE_URL="postgres://user:pass@host:5432/db" \
-  -e NODE_ENV=production \
-  bizu-saas
+1. Importe o repositório na [Vercel](https://vercel.com) (Framework: **React Router**).
+2. Node.js **22.x**.
+3. Build command: `npm run build` (padrão; output gerenciado pelo preset).
+4. Configure env vars (§9).
+5. Rode `npm run db:migrate` com `DIRECT_URL` **antes** do formulário de contato em produção.
+6. No Supabase, adicione **Redirect URLs**: `https://<dominio>/auth/callback`.
+
+### Stack server (referência)
+
+```text
+react-router.config.ts  →  vercelPreset()
+src/server.ts           →  export default app.fetch
+src/api/app.ts          →  montado em /api
+vite.config.ts          →  rollup input ./src/server.ts (SSR build)
 ```
 
-- O container expõe a porta **3000** (override via `-e PORT=...`).
-- O `HEALTHCHECK` usa `GET /api/health`.
-- O `docker-compose.yml` atual provê apenas o Postgres local para dev; em
-  produção aponte `DATABASE_URL` para o seu Postgres gerenciado/registry.
+Healthcheck: `GET /api/health`
+
+### Postgres em serverless
+
+- Migrations **fora** do deploy (local ou pipeline CI).
+- Runtime usa pooler; evite conexões diretas sem pool em Functions.
+- `src/db/index.ts`: `max: 1` por instância.
 
 ---
 
 ## 11. Como evoluir
 
-- **Blog no banco:** crie a tabela `posts` no schema Drizzle, gere a migration e
-  troque o corpo de `getAllPosts`/`getPostBySlug` em `src/lib/content/posts.ts`
-  por `getDb().select()...` (os loaders já chamam essas funções).
-- **Proteção SSR por sessão:** se uma rota pública precisar saber se o usuário
-  está logado no servidor (ex.: mudar um CTA), implemente leitura de sessão do
-  Supabase dentro do `loader` daquela rota específica e comente o motivo.
-- **Pré-render (SSG):** se quiser servir algumas páginas como estáticas, avalie
-  o `prerender` no `react-router.config.ts` (cuidado: muda o trade-off de SSR).
+- **Blog no banco:** tabela `posts` no Drizzle + migration; trocar corpo de
+  `getAllPosts`/`getPostBySlug` em `src/lib/content/posts.ts`.
+- **Proteção SSR por sessão:** leitura de sessão Supabase no `loader` de rota
+  pública específica, se necessário — documentar o motivo.
+- **Pré-render (SSG):** avaliar `prerender` em `react-router.config.ts` (muda
+  trade-off de SSR dinâmico).
+- **Preview deployments:** repetir env vars e redirect URLs Supabase para URLs de preview, se usar auth em preview.

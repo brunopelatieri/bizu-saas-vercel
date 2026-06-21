@@ -87,6 +87,7 @@ dist
 # React Router (Framework Mode)
 /build
 /.react-router
+.vercel
 
 # Gatsby files
 .cache/

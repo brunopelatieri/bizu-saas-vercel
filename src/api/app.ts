@@ -5,17 +5,15 @@ import { contactMessages } from "@/db/schema";
 import { contactMessageSchema } from "@/lib/schemas/contact";
 
 /**
- * App Hono com toda a lógica de negócio da API (/api/*).
- * É montado dentro do servidor SSR do React Router em src/server.ts,
- * rodando no mesmo processo Node — por isso não há mais necessidade de CORS
- * (front e API compartilham a mesma origem).
+ * App Hono com a lógica de negócio da API.
+ * Montado em `/api` em `src/server.ts` (Vercel Functions + dev local).
  */
 export const api = new Hono();
 
-api.get("/api/health", (c) => c.json({ ok: true }));
+api.get("/health", (c) => c.json({ ok: true }));
 
 api.post(
-  "/api/contact",
+  "/contact",
   zValidator("json", contactMessageSchema, (result, c) => {
     if (!result.success) {
       return c.json(

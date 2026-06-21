@@ -26,7 +26,7 @@ Ao alterar qualquer item abaixo, atualize documentação na mesma sessão:
 - arquitetura
 - rotas
 - stack/dependências
-- deploy/Docker/Portainer
+- deploy/Vercel
 - banco/schema/migrations
 - Supabase/Auth/Storage
 - dashboard/admin

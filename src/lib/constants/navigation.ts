@@ -16,7 +16,7 @@ export const siteConfig = {
   },
   links: {
     demo: "https://bizu.bru.ia.br",
-    repo: "https://github.com/brunopelatieri/bizu-saas",
+    repo: "https://github.com/brunopelatieri/bizu-saas-vercel",
     repoVercel: "https://github.com/brunopelatieri/bizu-saas-vercel",
     github: "https://github.com/brunopelatieri",
     site: "https://brunogoulart.com.br",
@@ -42,7 +42,6 @@ export type NavItem = (typeof navItems)[number];
 export const socialLinks = [
   { label: "GitHub", href: siteConfig.links.github },
   { label: "Repositório", href: siteConfig.links.repo },
-  { label: "Repo Vercel", href: siteConfig.links.repoVercel },
   { label: "LinkedIn", href: siteConfig.links.linkedin },
   { label: "Site", href: siteConfig.links.site },
   { label: "YouTube", href: siteConfig.links.youtube },

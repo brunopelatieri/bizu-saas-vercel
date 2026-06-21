@@ -25,7 +25,7 @@ const faqs = [
   {
     question: "Onde faço o deploy?",
     answer:
-      "Este repositório é focado em VPS + Docker + Node único (react-router-hono-server + Hono + SSR). A demo em bizu.bru.ia.br roda na Vercel; a arquitetura otimizada para esse deploy está em github.com/brunopelatieri/bizu-saas-vercel. Use a demo como referência visual, não como espelho 1:1 deste código.",
+      "Este repositório é otimizado para a Vercel: React Router v7 com preset @vercel/react-router, SSR via Functions e Hono no server entry. A demo em bizu.bru.ia.br usa este mesmo stack.",
   },
   {
     question: "Preciso saber IA para usar?",

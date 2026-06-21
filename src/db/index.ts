@@ -14,7 +14,13 @@ export function getDb(): Database {
       throw new Error("DATABASE_URL is not set");
     }
 
-    const client = postgres(connectionString, { max: 10 });
+    // Pool enxuto para Vercel Functions (instâncias efêmeras).
+    // Use connection string com pooler (Neon, Supabase pooler, PgBouncer).
+    const client = postgres(connectionString, {
+      max: 1,
+      idle_timeout: 20,
+      connect_timeout: 10,
+    });
     db = drizzle(client, { schema });
   }
 

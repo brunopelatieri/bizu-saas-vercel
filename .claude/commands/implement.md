@@ -34,7 +34,8 @@ Given any implementation context provided as an argument, do this:
 3. Execute tasks systematically following these phases:
 
    **Phase 1: Validation & Prerequisites**
-   - Verify constitution exists (`.specify/memory/constitution.md`)
+   - Verify constitution exists (`.specify/memory/constitution.md`) including **Project Architecture Constraints (Bizu SaaS)**
+   - Read `AI_CONTEXT.md` and `PROJECT_TECHNICAL_SPEC.md` for current Vercel-only stack
    - Validate spec, plan, and tasks files are complete
    - Check project structure and dependencies
    - Ensure all task dependencies form a valid DAG (no circular dependencies)
@@ -61,16 +62,17 @@ Given any implementation context provided as an argument, do this:
    - Log significant decisions and their rationale
 
 6. Final validation:
+   - Run `npm run typecheck` and `npm run build` (Vercel-compatible build)
    - Run full test suite to verify implementation integrity
    - Validate that all acceptance criteria from spec.md are met
    - Check that no tasks remain in pending state
-   - Update documentation as needed
+   - Update `AI_CONTEXT.md` / `PROJECT_TECHNICAL_SPEC.md` if architecture or deploy changed
 
 **Next Steps After Implementation:**
 - Review implementation against acceptance criteria
 - Run final test suite and quality checks
 - Update documentation if needed
-- Prepare for deployment or next feature iteration
+- Prepare for Vercel deploy or next feature iteration
 
 **Important Notes:**
 - The `/implement` command enforces TDD by design - all tests must be written and pass before implementation tasks can execute

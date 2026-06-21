@@ -7,8 +7,7 @@ admin e sistemas web de aplicacao.
 
 O objetivo do template e ser uma base moderna, robusta e reutilizavel, com boa
 separacao de responsabilidades, SSR nas rotas publicas, area autenticada
-client-side, API server-side e deploy simples em VPS propria com Ubuntu Linux,
-Docker e Portainer.
+client-side, API server-side e deploy na Vercel com React Router preset.
 
 ---
 
@@ -28,16 +27,17 @@ web com:
 - Supabase apenas como servico auxiliar para Auth, Storage, Edge Functions e
   Realtime broadcast/presence.
 - Base visual shadcn/ui + Tailwind v4 com tema inspirado no `shadcn-admin`.
-- Deploy planejado para VPS propria com Docker e Portainer.
+- Deploy na Vercel com preset `@vercel/react-router`.
 
 ### Arquitetura Atual
 
 ```text
-Node process unico: react-router-hono-server
+Vercel Functions + @vercel/react-router preset
   |
-  |-- /api/*                    Hono API
+  |-- src/server.ts           entry Web API (Hono + createRequestHandler)
+  |-- /api/*                  Hono API
   |     |-- GET  /api/health
-  |     `-- POST /api/contact   Drizzle -> Postgres proprio
+  |     `-- POST /api/contact   Drizzle -> Postgres (pooler)
   |
   |-- /                         React Router Framework Mode + SSR
   |-- /sobre                    SSR
@@ -75,7 +75,7 @@ logada simples, client-side e sem exposicao de dados no SSR.
 
 | Camada | Ferramenta | Uso |
 |--------|------------|-----|
-| Runtime | Node.js 22 | Runtime do build Docker e servidor de producao |
+| Runtime | Node.js 22 | Runtime Vercel Functions e build |
 | Linguagem | TypeScript 5.9 | Tipagem estrita em front, server e configs |
 | Package manager | npm | Instalacao e scripts |
 | Modulos | ESM (`type: module`) | Padrao moderno exigido pela integracao RR/Hono |
@@ -90,7 +90,7 @@ logada simples, client-side e sem exposicao de dados no SSR.
 | `@react-router/dev` | 7.18 | CLI `react-router dev/build/typegen` |
 | `@react-router/node` | 7.18 | Utilitarios server-side do RR |
 | Vite | 7.2 | Build tool por baixo do Framework Mode |
-| `react-router-hono-server` | 2.21 | Servidor Hono integrado ao build/SSR do RR |
+| `@vercel/react-router` | 1.3 | Preset Vercel para SSR/Functions |
 
 ### UI / Design System
 
@@ -184,9 +184,7 @@ servicos server-only.
 |   |-- styles/theme.css
 |   |-- root.tsx              document/root app
 |   |-- routes.ts             route config do RR
-|   `-- server.ts             servidor Hono + RR SSR
-|-- Dockerfile
-|-- docker-compose.yml        Postgres local de desenvolvimento
+|   `-- server.ts             server entry Web API (Hono + RR SSR)
 |-- react-router.config.ts
 |-- vite.config.ts
 `-- PROJECT_TECHNICAL_SPEC.md
@@ -199,8 +197,7 @@ servicos server-only.
 | Script | Funcao |
 |--------|--------|
 | `npm run dev` | Inicia RR dev server com SSR + Hono + HMR |
-| `npm run build` | Gera `build/client` e `build/server` |
-| `npm run start` | Roda producao local: `node ./build/server/index.js` |
+| `npm run build` | Gera build para deploy Vercel (preset escreve `.vercel/`) |
 | `npm run typecheck` | `react-router typegen && tsc` |
 | `npm run db:generate` | Gera migrations Drizzle |
 | `npm run db:migrate` | Aplica migrations |
@@ -216,6 +213,7 @@ servicos server-only.
 - `react-router.config.ts`
   - `appDirectory: "src"`
   - `ssr: true`
+  - `presets: [vercelPreset()]`
 - `src/root.tsx`
   - Define documento HTML.
   - Registra `<Meta />`, `<Links />`, `<Scripts />`, `<ScrollRestoration />`.
@@ -274,14 +272,12 @@ Validacao:
 - `src/components/contact/contact-form.tsx` reutiliza o mesmo schema antes do
   `fetch`, mantendo contrato consistente entre cliente e API.
 
-O Hono e montado por `src/server.ts`:
+O Hono e montado por `src/server.ts` (entry Web API Vercel):
 
 ```ts
-export default await createHonoServer({
-  configure(server) {
-    server.route("/", api);
-  },
-});
+app.route("/api", api);
+app.all("*", (c) => requestHandler(c.req.raw));
+export default app.fetch;
 ```
 
 Como tudo roda na mesma origem, o CORS antigo foi removido. Se o projeto expor a
@@ -632,70 +628,49 @@ Objetivo:
 
 ---
 
-## 14. Deploy em VPS Ubuntu + Docker + Portainer
+## 14. Deploy na Vercel
 
-### Demo em Producao
+### Producao
 
 - URL: `https://bizu.bru.ia.br`
-- Hospedagem: **Vercel** (demo publica).
-- Repositório Vercel (arquitetura otimizada para serverless): `https://github.com/brunopelatieri/bizu-saas-vercel`
-- Repositório principal (este repo): **VPS + Docker + Node unico** via `react-router-hono-server` + Hono + SSR.
-- Objetivo: demo como referencia visual; codigo de producao self-hosted permanece neste template.
+- Hospedagem: **Vercel**
+- Repositório: `https://github.com/brunopelatieri/bizu-saas-vercel`
+- Framework: React Router v7 com preset `@vercel/react-router`
+- SSR via Vercel Functions (Fluid compute)
 
-### Modelo de Deploy
+### Configuracao do Projeto Vercel
 
-Destino planejado:
+1. Importar repositório GitHub.
+2. Framework Preset: **React Router** (auto-detectado com preset).
+3. Node.js: **22.x**.
+4. Build command: `npm run build` (padrao).
+5. Output: gerenciado pelo preset (nao configurar manualmente).
 
-- VPS propria.
-- Ubuntu Linux.
-- Docker Engine.
-- Portainer para gerenciar containers/stacks.
-- Reverse proxy recomendado: Traefik, Caddy ou Nginx Proxy Manager.
+### Server Entry
 
-### Container da Aplicacao
+`src/server.ts` exporta handler Web API (`app.fetch`):
 
-`Dockerfile` multi-stage:
+- Monta Hono em `/api` (`src/api/app.ts`).
+- Delega demais rotas ao `createRequestHandler` do React Router.
+- Compativel com Vercel Functions e dev local (`react-router dev`).
 
-1. Stage `build`
-   - Node 22 Alpine.
-   - `npm ci`.
-   - `npm run build`.
-2. Stage `runtime`
-   - Node 22 Alpine.
-   - `npm ci --omit=dev`.
-   - Copia `build/`.
-   - Expõe `3000`.
-   - Healthcheck em `/api/health`.
-   - `CMD ["node", "build/server/index.js"]`.
+`vite.config.ts` define `rollupOptions.input: "./src/server.ts"` no build SSR.
 
-### Compose Atual
+### Postgres em Serverless
 
-`docker-compose.yml` atual contem apenas Postgres local:
+- Usar `DATABASE_URL` com **connection pooler** (Neon pooled, Supabase pooler, PgBouncer).
+- `src/db/index.ts` usa `max: 1` por instancia de Function.
+- Migrations rodam fora do deploy (`npm run db:migrate` local/CI com `DIRECT_URL`).
 
-- `postgres:16-alpine`
-- Porta local `15432` publicada para `5432` dentro do container.
-- Usuario/senha/db: `portal`.
-- Volume `postgres_data`.
+### Variaveis de Ambiente (Vercel Dashboard)
 
-Para producao via Portainer, recomenda-se stack com:
+Runtime/build:
 
-- Container app (`bizu-saas`).
-- Container Postgres ou Postgres externo/gerenciado.
-- Rede Docker compartilhada.
-- Reverse proxy com TLS.
-- Variaveis injetadas pelo Portainer (nunca comitar secrets).
+- `DATABASE_URL` — conexao pooled para Drizzle em runtime.
+- `VITE_SUPABASE_URL` — injetada no build do client.
+- `VITE_SUPABASE_PUBLISHABLE_KEY` — injetada no build do client.
 
-### Variaveis de Ambiente
-
-Runtime:
-
-- `NODE_ENV=production`
-- `PORT=3000`
-- `DATABASE_URL`
-- `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_PUBLISHABLE_KEY`
-
-Migrations:
+Migrations (local/CI):
 
 - `DIRECT_URL`
 
@@ -708,6 +683,17 @@ Pagamentos/e-mail futuros:
 - `SMTP_USER`
 - `SMTP_PASS`
 - `MAIL_FROM`
+
+### Supabase Auth
+
+Adicionar em Redirect URLs do projeto Supabase:
+
+- `https://<dominio-producao>/auth/callback`
+- URLs de preview Vercel se necessario (`https://*.vercel.app/auth/callback` conforme politica do projeto).
+
+### Healthcheck
+
+- `GET /api/health` — disponivel para monitoramento externo.
 
 ---
 
@@ -731,35 +717,29 @@ npm run typecheck
 npm run build
 ```
 
-Para smoke test local de producao:
+Para validar build local:
 
-```powershell
-$env:NODE_ENV="production"
-$env:PORT="3000"
-node build/server/index.js
+```bash
+npm run build
 ```
 
 ---
 
 ## 16. Bugs, Riscos e Ajustes Recomendados
 
-### BUG-001 — `.env.example` ainda indicava `PORT=3001` (corrigido)
+### BUG-001 — `.env.example` desatualizado (corrigido)
 
 Estado anterior:
 
-- O projeto migrou para processo unico.
-- `Dockerfile` e runtime usam `PORT=3000`.
-- `.env.example` ainda documenta `PORT=3001` como "API Hono".
+- Documentava `PORT=3000` e Postgres local via docker-compose.
 
 Impacto:
 
-- Confunde novos projetos criados a partir do template.
-- Pode fazer o dev subir o app em porta diferente da documentada no Docker.
+- Confundia setup para deploy Vercel-only.
 
 Status:
 
-- Corrigido para `PORT=3000`.
-- Comentario atualizado para "Servidor unico — React Router SSR + Hono API".
+- `.env.example` atualizado para Postgres gerenciado com pooler e vars Vercel.
 
 ### BUG-002 — `README.md` estava desatualizado pos-migracao (corrigido)
 
@@ -776,15 +756,15 @@ Impacto:
 
 Status:
 
-- README reescrito para Framework Mode, Hono unificado, metodologia AI Software
-  Engineering, scripts atuais e deploy VPS/Docker/Portainer.
+- README reescrito para Framework Mode, Hono no server entry, metodologia AI Software
+  Engineering, scripts atuais e deploy Vercel.
 
 ### BUG-003 — `.cursor/rules/portal-stack.mdc` estava desatualizada (corrigido)
 
 Estado anterior:
 
 - A rule diz que API Hono fica em `server/` e `/api` passa por proxy Vite.
-- A arquitetura atual usa `src/api/app.ts` + `src/server.ts` em processo unico.
+- A arquitetura atual usa `src/api/app.ts` + `src/server.ts` (entry Web API Vercel).
 
 Impacto:
 
@@ -847,22 +827,20 @@ Status:
 - Aplicado `zValidator("json", contactMessageSchema)` em `src/api/app.ts`.
 - Formulario de contato reutiliza `contactMessageSchema.safeParse`.
 
-### RISK-002 — Migrations nao estao no runtime Docker
+### RISK-002 — Migrations fora do deploy Vercel
 
 Estado atual:
 
-- `.dockerignore` exclui `drizzle/`.
-- Runtime Docker usa `npm ci --omit=dev`, portanto nao inclui `drizzle-kit`.
+- Migrations rodam via `drizzle-kit` em local/CI, nao no build Vercel.
 
 Impacto:
 
-- O container de app nao executa migrations.
-- Isso e aceitavel se migrations forem uma etapa separada no deploy.
+- Deploy nao aplica schema automaticamente.
 
 Acao recomendada:
 
-- Documentar explicitamente no README/Portainer: migrations devem rodar em job
-  separado ou pipeline.
+- Documentar no README: rodar `npm run db:migrate` antes do primeiro deploy
+  ou em pipeline CI com `DIRECT_URL`.
 
 ### RISK-003 — Blog ainda e estatico
 
@@ -887,7 +865,6 @@ Acao recomendada:
 
 - Adicionar shadcn components essenciais: `dialog`, `dropdown-menu`, `sheet`,
   `table`, `form`, `select`, `skeleton`, `tooltip`, `avatar`.
-- Criar stack Portainer completa para app + Postgres + reverse proxy.
 - Documentar rotina de migrations como job/pipeline separado.
 
 ### Medio prazo
@@ -906,7 +883,7 @@ Acao recomendada:
 - RBAC/permissoes.
 - Observabilidade: logs estruturados, health/readiness, tracing.
 - CI com typecheck/build/test.
-- Backups e restore documentados para VPS.
+- Backups e restore documentados para Postgres gerenciado.
 
 ---
 
@@ -921,9 +898,9 @@ O projeto esta bem posicionado como template moderno e reutilizavel para:
 - SaaS com auth, dashboard e billing futuro.
 - Sistemas web com admin.
 
-A base tecnica esta consistente: React Router Framework Mode com SSR, Hono no
-mesmo processo, Drizzle/Postgres como fonte de dados, Supabase auxiliar,
-Tailwind/shadcn como design system e Docker para VPS.
+A base tecnica esta consistente: React Router Framework Mode com SSR na Vercel,
+Hono no server entry, Drizzle/Postgres como fonte de dados, Supabase auxiliar e
+Tailwind/shadcn como design system.
 
 Os principais ajustes agora sao de alinhamento documental/regras e limpeza de
 dependencias, nao de arquitetura.

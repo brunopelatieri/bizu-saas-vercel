@@ -6,8 +6,8 @@ const features = [
   },
   {
     icon: "🔌",
-    title: "API no mesmo processo",
-    body: "Hono montado junto do SSR em um único processo Node. Sem proxy, sem segundo servidor — frontend e API compartilham origem.",
+    title: "API integrada ao SSR",
+    body: "Hono montado no server entry da Vercel. Sem proxy, sem segundo servidor — frontend e API compartilham origem.",
   },
   {
     icon: "🗄️",
@@ -25,9 +25,9 @@ const features = [
     body: "shadcn/ui + Tailwind v4, tema claro/escuro com anti-flash e componentes acessíveis prontos para compor telas.",
   },
   {
-    icon: "🐳",
-    title: "Deploy simples em VPS",
-    body: "Dockerfile multi-stage para Ubuntu + Docker + Portainer. Um processo, healthcheck e build de produção enxuto.",
+    icon: "▲",
+    title: "Deploy na Vercel",
+    body: "React Router v7 com @vercel/react-router preset, SSR via Functions e zero config de infraestrutura.",
   },
 ];
 

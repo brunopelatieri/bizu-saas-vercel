@@ -6,7 +6,7 @@ export const meta: MetaFunction = () =>
   buildMeta({
     title: "Bizu SaaS — Boilerplate full-stack com AI Software Engineering",
     description:
-      "Base robusta para criar SaaS, portais e sistemas web rápido: React Router v7, Hono, Drizzle, Supabase e Docker — com fluxo de desenvolvimento guiado por IA.",
+      "Base robusta para criar SaaS, portais e sistemas web rápido: React Router v7, Hono, Drizzle, Supabase e Vercel — com fluxo de desenvolvimento guiado por IA.",
     path: "/",
     image: `${siteConfig.url}${siteConfig.logo}`,
   });

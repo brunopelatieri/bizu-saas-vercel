@@ -23,7 +23,7 @@ Antes de mudanças técnicas relevantes:
 
 - React Router v7 Framework Mode com `ssr: true`.
 - Hono API em `src/api/app.ts`, montado por `src/server.ts`.
-- Processo único em dev/prod (`react-router dev`, `node build/server/index.js`).
+- Processo único em dev/prod via Vercel Functions (`react-router dev`, `react-router build`).
 - Drizzle/Postgres como fonte de dados.
 - Supabase apenas auxiliar (Auth, Storage, Functions, Realtime).
 - Dashboard client-only por convenção: sem loaders server-side com dados sensíveis.
