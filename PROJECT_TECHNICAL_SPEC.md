@@ -633,7 +633,9 @@ Objetivo:
 ### Producao
 
 - URL: `https://bizu.bru.ia.br`
-- Hospedagem: **Vercel**
+- Hospedagem: **Vercel** (deploy realizado)
+- Postgres: **[Neon](https://neon.com/)** — `DATABASE_URL` pooled (Production + Preview)
+- Auth: **Supabase OAuth** — `VITE_SUPABASE_URL` + `VITE_SUPABASE_PUBLISHABLE_KEY`
 - Repositório: `https://github.com/brunopelatieri/bizu-saas-vercel`
 - Framework: React Router v7 com preset `@vercel/react-router`
 - SSR via Vercel Functions (Fluid compute)
@@ -656,23 +658,25 @@ Objetivo:
 
 `vite.config.ts` define `rollupOptions.input: "./src/server.ts"` no build SSR.
 
-### Postgres em Serverless
+### Postgres em Serverless (Neon)
 
-- Usar `DATABASE_URL` com **connection pooler** (Neon pooled, Supabase pooler, PgBouncer).
+- **Producao:** [Neon](https://neon.com/) com connection string **Pooled** em `DATABASE_URL`
+  (Vercel Production + Preview).
+- **Migrations:** Neon connection string **Direct** em `DIRECT_URL` (local/CI apenas).
 - `src/db/index.ts` usa `max: 1` por instancia de Function.
-- Migrations rodam fora do deploy (`npm run db:migrate` local/CI com `DIRECT_URL`).
+- Migrations rodam fora do deploy (`npm run db:migrate`).
 
 ### Variaveis de Ambiente (Vercel Dashboard)
 
-Runtime/build:
+Production + Preview (mesmas chaves):
 
-- `DATABASE_URL` — conexao pooled para Drizzle em runtime.
-- `VITE_SUPABASE_URL` — injetada no build do client.
-- `VITE_SUPABASE_PUBLISHABLE_KEY` — injetada no build do client.
+- `DATABASE_URL` — Neon pooled (runtime Drizzle).
+- `VITE_SUPABASE_URL` — Supabase OAuth (build client).
+- `VITE_SUPABASE_PUBLISHABLE_KEY` — Supabase OAuth (build client).
 
-Migrations (local/CI):
+Local/CI (nao configurar na Vercel):
 
-- `DIRECT_URL`
+- `DIRECT_URL` — Neon direct (Drizzle Kit)
 
 Pagamentos/e-mail futuros:
 
@@ -684,12 +688,12 @@ Pagamentos/e-mail futuros:
 - `SMTP_PASS`
 - `MAIL_FROM`
 
-### Supabase Auth
+### Supabase Auth (OAuth)
 
-Adicionar em Redirect URLs do projeto Supabase:
+Redirect URLs configuradas no projeto Supabase:
 
-- `https://<dominio-producao>/auth/callback`
-- URLs de preview Vercel se necessario (`https://*.vercel.app/auth/callback` conforme politica do projeto).
+- `https://bizu.bru.ia.br/auth/callback`
+- Preview Vercel (opcional): `https://*.vercel.app/auth/callback`
 
 ### Healthcheck
 

@@ -9,7 +9,7 @@ Supabase é **serviço auxiliar**. Dados da aplicação ficam no **Postgres pró
 
 ## Usar Supabase para
 
-- **Auth** — login, OAuth, sessão, `getUser()`, `signOut()` → `src/lib/auth/`
+- **Auth OAuth** — login, callback, sessão, `getUser()`, `signOut()` → `src/lib/auth/`
 - **Storage** — upload, URLs públicas, listagem → `src/lib/supabase/storage.ts`
 - **Edge Functions** — `invokeFunction()` → `src/lib/supabase/functions.ts`
 - **Realtime broadcast/presence** — canais entre clientes → `src/lib/supabase/realtime.ts`

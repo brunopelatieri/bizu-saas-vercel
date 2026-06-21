@@ -14,6 +14,9 @@ pages, blogs, dashboards/admin e sistemas web de aplicação sem começar do zer
 Deploy exclusivo na **Vercel** com React Router v7 Framework Mode, preset
 `@vercel/react-router` e SSR via Vercel Functions.
 
+**Produção configurada:** Postgres [Neon](https://neon.com/) + Auth OAuth Supabase
+(env vars em Production e Preview na Vercel).
+
 ## O Que Vem Pronto
 
 - Landing page responsiva, blog com SSR, páginas públicas e meta tags.
@@ -61,7 +64,7 @@ cd bizu-saas-vercel
 
 npm install
 cp .env.example .env.local
-# Configure DATABASE_URL (Postgres com pooler) e VITE_SUPABASE_*
+# Configure Neon (Pooled + Direct) e VITE_SUPABASE_* (OAuth)
 
 npm run db:migrate
 npm run dev
@@ -78,29 +81,36 @@ http://localhost:5173
 1. Importe o repositório na [Vercel](https://vercel.com).
 2. Framework Preset: **React Router** (detectado automaticamente com o preset).
 3. Node.js: **22.x**.
-4. Configure as variáveis de ambiente (Production e Preview):
+4. Configure as variáveis de ambiente em **Production** e **Preview** (mesmas chaves):
 
-| Variável | Obrigatória | Observação |
-|----------|-------------|------------|
-| `DATABASE_URL` | Sim | URL **pooled** (Neon, Supabase pooler, PgBouncer) |
-| `DIRECT_URL` | Migrations | Usada localmente/CI com `drizzle-kit` |
-| `VITE_SUPABASE_URL` | Sim | Necessária no build |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | Sim | Necessária no build |
+| Variável | Obrigatória | Fonte / observação |
+|----------|-------------|-------------------|
+| `DATABASE_URL` | Sim | [Neon](https://neon.com/) — connection string **Pooled** (runtime Drizzle na Vercel) |
+| `DIRECT_URL` | Migrations | Neon — connection string **Direct** (local/CI; não precisa na Vercel) |
+| `VITE_SUPABASE_URL` | Sim | Supabase → Project Settings → API (OAuth no client) |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Sim | Supabase → publishable key (build Vite) |
 
-5. No Supabase, adicione a URL de produção em **Redirect URLs**:
-   `https://seu-dominio.vercel.app/auth/callback`
-6. Rode migrations contra o Postgres de produção **antes** do primeiro deploy
-   com formulário de contato (`npm run db:migrate` com `DIRECT_URL` apontando
-   para o banco).
+**Neon:** Console → seu projeto → **Connection Details** → copie *Pooled* para
+`DATABASE_URL` e *Direct* para `DIRECT_URL` (migrations).
 
-Build command: `npm run build` (padrão). Output gerenciado pelo preset Vercel.
+**Supabase OAuth:** Authentication → URL Configuration → **Redirect URLs**:
+   `https://bizu.bru.ia.br/auth/callback`
+   (e URLs de preview `https://*.vercel.app/auth/callback`, se necessário)
+
+5. Rode migrations contra o Neon **antes** do formulário de contato em produção:
+   ```bash
+   # .env.local com DIRECT_URL = Neon Direct
+   npm run db:migrate
+   ```
+
+6. Build command: `npm run build` (padrão). Output gerenciado pelo preset Vercel.
 
 ## Variáveis Principais
 
-- `DATABASE_URL` — conexão runtime com Postgres (use pooler na Vercel).
-- `DIRECT_URL` — conexão usada pelo Drizzle Kit/migrations.
-- `VITE_SUPABASE_URL` — URL pública do projeto Supabase.
-- `VITE_SUPABASE_PUBLISHABLE_KEY` — chave pública do Supabase.
+- `DATABASE_URL` — Neon **Pooled** (runtime na Vercel e dev local).
+- `DIRECT_URL` — Neon **Direct** (migrations com `drizzle-kit`).
+- `VITE_SUPABASE_URL` — URL do projeto Supabase (OAuth).
+- `VITE_SUPABASE_PUBLISHABLE_KEY` — chave pública Supabase (build Vite).
 
 ## Scripts Úteis
 

@@ -107,8 +107,8 @@ deste repositório. Agentes devem respeitá-las ao planejar e implementar featur
 
 - **Frontend:** React 19 + React Router v7 Framework Mode (`ssr: true`).
 - **API:** Hono em `src/api/app.ts`, montado em `/api` via `src/server.ts`.
-- **Dados:** Drizzle ORM + Postgres próprio (`DATABASE_URL` com pooler em serverless).
-- **Auth/auxiliar:** Supabase (Auth, Storage, Functions, Realtime) — **não** CRUD via `supabase.from()`.
+- **Dados:** Drizzle ORM + [Neon](https://neon.com/) Postgres (`DATABASE_URL` pooled).
+- **Auth/auxiliar:** Supabase OAuth (`VITE_SUPABASE_*`) — **não** CRUD via `supabase.from()`.
 
 ### Convenções de código
 

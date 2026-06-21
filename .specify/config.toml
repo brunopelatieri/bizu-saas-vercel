@@ -6,6 +6,8 @@ description = "Boilerplate full-stack Bizu SaaS — deploy exclusivo na Vercel"
 target = "vercel"
 demo_url = "https://bizu.bru.ia.br"
 repository = "https://github.com/brunopelatieri/bizu-saas-vercel"
+database = "neon"
+auth = "supabase-oauth"
 
 [project.branch_naming]
 description = "Single-branch workflow - develop all features on current branch or manually created branch"

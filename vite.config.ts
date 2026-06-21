@@ -3,18 +3,21 @@ import { reactRouter } from "@react-router/dev/vite";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vite";
 
-export default defineConfig(({ isSsrBuild }) => ({
+export default defineConfig({
   plugins: [reactRouter(), tailwindcss()],
-  build: {
-    rollupOptions: isSsrBuild
-      ? {
+  // v8_viteEnvironmentApi: custom server entry no ambiente SSR (substitui isSsrBuild).
+  environments: {
+    ssr: {
+      build: {
+        rollupOptions: {
           input: "./src/server.ts",
-        }
-      : undefined,
+        },
+      },
+    },
   },
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "./src"),
     },
   },
-}));
+});

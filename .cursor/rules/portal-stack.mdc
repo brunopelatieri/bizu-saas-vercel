@@ -10,8 +10,8 @@ alwaysApply: true
 - **Build:** Vite via React Router (`react-router dev/build`) + preset `@vercel/react-router`
 - **UI:** shadcn/ui + Tailwind v4 (`src/components/ui/`, `src/index.css`, `src/styles/theme.css`)
 - **API:** Hono em `src/api/app.ts`, montado em `src/server.ts` (server entry Web API)
-- **Postgres:** Drizzle ORM → Postgres com pooler (`src/db/`, `DATABASE_URL`)
-- **Supabase:** Auth + Storage + Edge Functions + Realtime (`VITE_SUPABASE_*`)
+- **Postgres:** Drizzle ORM → [Neon](https://neon.com/) (`DATABASE_URL` pooled na Vercel)
+- **Supabase:** Auth OAuth + Storage + Edge Functions + Realtime (`VITE_SUPABASE_*`)
 - **Deploy:** Vercel (SSR via Functions, zero config com preset)
 
 ## Divisão

@@ -6,7 +6,9 @@ Este documento descreve a evolução do projeto e o **estado atual** do template
 2. **Servidor Node long-running** (`react-router-hono-server`) → **deploy Vercel-only**
    (`@vercel/react-router` + server entry Web API).
 
-Produção: **https://bizu.bru.ia.br** na Vercel. Repositório:
+Produção: **https://bizu.bru.ia.br** na Vercel (**deploy realizado**).
+Postgres: **[Neon](https://neon.com/)** · Auth: **Supabase OAuth** (env vars em
+Production + Preview). Repositório:
 **https://github.com/brunopelatieri/bizu-saas-vercel**.
 
 ---
@@ -136,28 +138,45 @@ App em dev: **http://localhost:5173**
 
 ## 9. Variáveis de ambiente
 
-| Variável | Onde | Uso |
-|----------|------|-----|
-| `DATABASE_URL` | Vercel + `.env.local` | Runtime Drizzle — use URL **pooled** na Vercel |
-| `DIRECT_URL` | local/CI | `drizzle-kit` migrations |
-| `VITE_SUPABASE_URL` | Vercel (build) | Auth/Storage no client |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | Vercel (build) | Auth/Storage no client |
+### Produção (Vercel — Production + Preview)
 
-Em dev, copie `.env.example` → `.env.local`. Na Vercel, configure no painel
-(Production + Preview).
+Configurado e validado em deploy:
+
+| Variável | Fonte | Uso |
+|----------|-------|-----|
+| `DATABASE_URL` | [Neon](https://neon.com/) **Pooled** | Runtime Drizzle (`/api/contact`) nas Functions |
+| `VITE_SUPABASE_URL` | Supabase → API | Auth OAuth no client (build Vite) |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Supabase → API | Auth OAuth no client (build Vite) |
+
+`DIRECT_URL` **não** vai na Vercel — só local/CI para migrations.
+
+### Local / CI
+
+| Variável | Fonte | Uso |
+|----------|-------|-----|
+| `DATABASE_URL` | Neon Pooled (ou Direct em dev simples) | Dev + testes de API |
+| `DIRECT_URL` | Neon **Direct** | `npm run db:migrate`, `db:push`, `db:studio` |
+
+**Neon Console:** Connection Details → *Pooled* vs *Direct*.
+
+**Supabase OAuth:** Redirect URLs incluem `https://bizu.bru.ia.br/auth/callback`.
+
+Em dev, copie `.env.example` → `.env.local`.
 
 ---
 
 ## 10. Deploy (Vercel)
 
-### Checklist
+**Status:** deploy em produção concluído. Stack: Vercel + Neon + Supabase OAuth.
+
+### Checklist (referência)
 
 1. Importe o repositório na [Vercel](https://vercel.com) (Framework: **React Router**).
 2. Node.js **22.x**.
 3. Build command: `npm run build` (padrão; output gerenciado pelo preset).
-4. Configure env vars (§9).
-5. Rode `npm run db:migrate` com `DIRECT_URL` **antes** do formulário de contato em produção.
-6. No Supabase, adicione **Redirect URLs**: `https://<dominio>/auth/callback`.
+4. Env vars Production + Preview (§9): Neon pooled + `VITE_SUPABASE_*`.
+5. Rode `npm run db:migrate` com Neon **Direct** em `DIRECT_URL` (local/CI).
+6. Supabase **Redirect URLs**: `https://bizu.bru.ia.br/auth/callback`.
 
 ### Stack server (referência)
 
@@ -170,10 +189,10 @@ vite.config.ts          →  rollup input ./src/server.ts (SSR build)
 
 Healthcheck: `GET /api/health`
 
-### Postgres em serverless
+### Postgres em serverless (Neon)
 
-- Migrations **fora** do deploy (local ou pipeline CI).
-- Runtime usa pooler; evite conexões diretas sem pool em Functions.
+- Runtime na Vercel: Neon **Pooled** em `DATABASE_URL`.
+- Migrations: Neon **Direct** em `DIRECT_URL` (local/CI).
 - `src/db/index.ts`: `max: 1` por instância.
 
 ---

@@ -42,10 +42,10 @@ Hono API no server entry (Web API / Vercel Functions):
   `-- src/api/app.ts (/api/*)
 
 Dados:
-  |-- Drizzle ORM + postgres.js -> Postgres (pooler recomendado)
-  `-- Supabase apenas auxiliar (Auth, Storage, Edge Functions, Realtime)
+  |-- Drizzle ORM + postgres.js -> Neon Postgres (DATABASE_URL pooled)
+  `-- Supabase auxiliar (Auth OAuth, Storage, Edge Functions, Realtime)
 
-Deploy: Vercel (Fluid compute + Functions)
+Deploy: Vercel (Production + Preview) — env vars abaixo
 ```
 
 ## Regras de Decisão
@@ -59,7 +59,8 @@ Deploy: Vercel (Fluid compute + Functions)
 - Use client-side fetching/TanStack Query para área autenticada.
 - Use Zod para contratos de entrada de API e formulários.
 - Use Drizzle migrations para mudanças de schema.
-- `DATABASE_URL` na Vercel deve usar connection pooler (serverless).
+- `DATABASE_URL` na Vercel: Neon **Pooled** ([neon.com](https://neon.com/)).
+- Auth: Supabase OAuth via `VITE_SUPABASE_URL` + `VITE_SUPABASE_PUBLISHABLE_KEY`.
 
 ## Quando Atualizar Contexto
 
@@ -79,8 +80,12 @@ Se a mudança afetar agentes/LLMs, atualize também `.cursor/rules/`.
 
 ## Status Atual
 
-- Demo/produção: [https://bizu.bru.ia.br](https://bizu.bru.ia.br) na **Vercel**.
+- Produção: [https://bizu.bru.ia.br](https://bizu.bru.ia.br) — **Vercel** (deploy ok).
 - Repositório: [bizu-saas-vercel](https://github.com/brunopelatieri/bizu-saas-vercel).
+- **Env vars (Production + Preview na Vercel):**
+  - `DATABASE_URL` — [Neon](https://neon.com/) connection string **Pooled**
+  - `DIRECT_URL` — Neon **Direct** (migrations local/CI; não na Vercel)
+  - `VITE_SUPABASE_URL` + `VITE_SUPABASE_PUBLISHABLE_KEY` — Supabase Auth OAuth
 - React Router Framework Mode com `ssr: true` e preset `@vercel/react-router`.
 - Hono montado em `src/server.ts` (entry Web API para Vercel Functions).
 - Blog SSR com fonte estática em `src/lib/content/posts.ts`.
