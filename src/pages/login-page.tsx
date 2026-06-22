@@ -2,8 +2,8 @@ import { Link, Navigate } from "react-router";
 import { Sparkles } from "lucide-react";
 import { AuthForm } from "@/components/auth/auth-form";
 import { SiteLogo } from "@/components/layout/site-logo";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { Badge } from "@/components/ui/badge";
+import { siteConfig } from "@/lib/constants/navigation";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { useAuth } from "@/providers/auth-provider";
 
@@ -14,7 +14,6 @@ const CODE_TEXTURE = [
   "  return implement(feature);",
   "}",
   "// AI Software Engineering",
-  "type QueryClient = TanStackQuery;",
 ].join("\n");
 
 export function LoginPage() {
@@ -34,64 +33,66 @@ export function LoginPage() {
 
   return (
     <div className="dark relative flex min-h-svh flex-col items-center justify-center overflow-hidden bg-background px-4 py-10">
-      <ThemeToggle className="absolute top-4 right-4 z-20" />
 
-      {/* Cyber grid */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,oklch(1_0_0/4%)_1px,transparent_1px),linear-gradient(to_bottom,oklch(1_0_0/4%)_1px,transparent_1px)] bg-[size:56px_56px] [mask-image:radial-gradient(ellipse_80%_60%_at_50%_40%,#000_20%,transparent_100%)]"
+        className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,oklch(1_0_0/3.5%)_1px,transparent_1px),linear-gradient(to_bottom,oklch(1_0_0/3.5%)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_45%,#000_25%,transparent_100%)]"
       />
 
-      {/* Code texture */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 overflow-hidden opacity-[0.04]"
+        className="pointer-events-none absolute inset-0 overflow-hidden opacity-[0.035]"
       >
-        <pre className="absolute -top-8 -left-8 w-[140%] rotate-[-8deg] font-mono text-[11px] leading-6 text-primary whitespace-pre-wrap select-none">
-          {CODE_TEXTURE.repeat(12)}
+        <pre className="absolute inset-0 font-mono text-[10px] leading-5 text-primary whitespace-pre-wrap select-none">
+          {CODE_TEXTURE.repeat(20)}
         </pre>
       </div>
 
-      {/* Glow orbs */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute top-0 left-1/2 h-[420px] w-[720px] -translate-x-1/2 rounded-full bg-[radial-gradient(ellipse_at_center,oklch(0.74_0.14_230/18%),transparent_65%)] blur-2xl"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute right-[-10%] bottom-[-10%] h-72 w-72 rounded-full bg-[radial-gradient(circle,oklch(0.72_0.16_280/12%),transparent_70%)] blur-3xl"
+        className="pointer-events-none absolute top-[-20%] left-1/2 h-[480px] w-[640px] -translate-x-1/2 rounded-full bg-[radial-gradient(ellipse_at_center,oklch(0.74_0.14_230/14%),transparent_68%)] blur-3xl"
       />
 
-      <div className="relative z-10 w-full max-w-md">
-        <div className="mb-8 text-center">
+      <div className="relative z-10 flex w-full max-w-lg flex-col items-center">
+        <header className="mb-8 w-full text-center">
           <Badge
             variant="outline"
-            className="mb-4 border-primary/30 bg-primary/5 text-primary"
+            className="mb-5 border-primary/25 bg-primary/5 px-3 py-1 text-primary"
           >
-            <Sparkles className="size-3" />
+            <Sparkles className="size-3.5" />
             Engineering AI Design
           </Badge>
-          <div className="flex justify-center">
-            <SiteLogo size="lg" />
+          <div className="flex flex-col items-center gap-3">
+            <SiteLogo size="lg" asLink={false} />
+            <div className="space-y-1">
+              <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                {siteConfig.name.replace(" SaaS", "")}
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                Entre ou crie sua conta para acessar o dashboard
+              </p>
+            </div>
           </div>
-          <p className="mt-3 text-sm text-muted-foreground">
-            Entre ou crie sua conta para acessar o dashboard
-          </p>
-        </div>
+        </header>
 
-        {/* Border beam card */}
-        <div className="relative rounded-2xl p-[1px]">
+        <div className="relative w-full">
           <div
             aria-hidden="true"
-            className="absolute inset-0 rounded-2xl bg-[conic-gradient(from_180deg_at_50%_50%,oklch(0.74_0.14_230/0%)_0deg,oklch(0.74_0.14_230/70%)_120deg,oklch(0.72_0.16_280/70%)_240deg,oklch(0.74_0.14_230/0%)_360deg)] opacity-80 blur-[1px] animate-[spin_8s_linear_infinite]"
+            className="pointer-events-none absolute -inset-px rounded-2xl bg-[linear-gradient(135deg,oklch(0.74_0.14_230/35%),oklch(0.72_0.16_280/25%),oklch(0.74_0.14_230/15%))] opacity-80 blur-sm"
           />
-          <div className="relative rounded-2xl border border-border/60 bg-card/90 p-6 shadow-2xl shadow-primary/5 backdrop-blur-xl sm:p-8">
+
+          <div className="relative w-full overflow-hidden rounded-2xl border border-border/50 bg-background/45 p-6 shadow-[0_0_40px_-12px_oklch(0.74_0.14_230/25%)] backdrop-blur-xl sm:p-8">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,oklch(0.74_0.14_230/60%),oklch(0.72_0.16_280/50%),transparent)]"
+            />
+
             {!isSupabaseConfigured() ? (
-              <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 text-sm">
+              <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm">
                 <p className="font-medium text-amber-400">
                   Supabase não configurado
                 </p>
-                <p className="mt-1 text-muted-foreground">
+                <p className="mt-2 text-muted-foreground">
                   Defina{" "}
                   <code className="rounded bg-muted px-1 py-0.5 text-xs">
                     VITE_SUPABASE_URL

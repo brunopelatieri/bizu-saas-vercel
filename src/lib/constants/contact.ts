@@ -65,4 +65,13 @@ export const contentProductionLinks: SocialLink[] = [
   { brand: "tiktok", label: "TikTok", href: siteConfig.links.tiktok },
 ];
 
+/** Botões de perfil — hero da página Sobre. */
+export const aboutProfileLinks: SocialLink[] = [
+  { brand: "linkedin", label: "LinkedIn", href: siteConfig.links.linkedin },
+  { brand: "youtube", label: "YouTube", href: siteConfig.links.youtube },
+  { brand: "tiktok", label: "TikTok", href: siteConfig.links.tiktok },
+  { brand: "github", label: "GitHub", href: siteConfig.links.github },
+  { brand: "site", label: "Site pessoal", href: siteConfig.links.site },
+];
+
 export const experienceSummary = `${siteConfig.author.experienceYears} anos de experiência (desde ${siteConfig.author.careerStart})`;

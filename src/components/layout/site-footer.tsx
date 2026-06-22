@@ -1,14 +1,14 @@
 import { Link } from "react-router";
-import { Mail, MapPin, Phone } from "lucide-react";
 import { SiteLogo } from "@/components/layout/site-logo";
-import { SocialIconLinks } from "@/components/layout/social-icon-links";
+import {
+  ContactLinksList,
+  SocialIconLinks,
+} from "@/components/layout/social-icon-links";
 import { directContactChannels } from "@/lib/constants/contact";
 import { navItems, siteConfig } from "@/lib/constants/navigation";
 
 export function SiteFooter() {
   const year = new Date().getFullYear();
-  const email = directContactChannels.find((c) => c.label === "E-mail");
-  const whatsapp = directContactChannels.find((c) => c.label === "WhatsApp");
 
   return (
     <footer className="mt-auto border-t border-border bg-background">
@@ -30,7 +30,7 @@ export function SiteFooter() {
                 <li key={item.href}>
                   <Link
                     to={item.href}
-                    className="text-sm text-muted-foreground transition hover:text-primary"
+                    className="text-sm text-muted-foreground transition-colors duration-200 hover:text-primary"
                   >
                     {item.label}
                   </Link>
@@ -44,36 +44,7 @@ export function SiteFooter() {
               Redes & contato
             </p>
             <SocialIconLinks className="mb-4" />
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              {email ? (
-                <li className="flex items-center gap-2">
-                  <Mail className="size-3.5 shrink-0" />
-                  <a
-                    href={email.href}
-                    className="truncate transition hover:text-primary"
-                  >
-                    {email.value}
-                  </a>
-                </li>
-              ) : null}
-              {whatsapp ? (
-                <li className="flex items-center gap-2">
-                  <Phone className="size-3.5 shrink-0" />
-                  <a
-                    href={whatsapp.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="transition hover:text-primary"
-                  >
-                    {whatsapp.value}
-                  </a>
-                </li>
-              ) : null}
-              <li className="flex items-start gap-2">
-                <MapPin className="mt-0.5 size-3.5 shrink-0" />
-                <span>{siteConfig.author.location}</span>
-              </li>
-            </ul>
+            <ContactLinksList channels={directContactChannels} />
           </div>
         </div>
 

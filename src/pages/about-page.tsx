@@ -1,11 +1,18 @@
 import { PageHero } from "@/components/layout/page-hero";
-import { SocialIconLinks } from "@/components/layout/social-icon-links";
-import { Button } from "@/components/ui/button";
 import {
+  InlineSocialLink,
+  SocialIconLinks,
+} from "@/components/layout/social-icon-links";
+import { SocialProfileButton } from "@/components/layout/social-profile-button";
+import {
+  aboutProfileLinks,
   contentProductionLinks,
   experienceSummary,
 } from "@/lib/constants/contact";
 import { siteConfig } from "@/lib/constants/navigation";
+
+const youtubeLink = contentProductionLinks.find((link) => link.brand === "youtube")!;
+const tiktokLink = contentProductionLinks.find((link) => link.brand === "tiktok")!;
 
 const focusAreas = [
   {
@@ -62,21 +69,13 @@ export function AboutPage() {
         description={`${siteConfig.author.displayName} — Desenvolvedor Full Stack desde ${siteConfig.author.careerStart}. ${experienceSummary}. Unindo a robustez de tecnologias consolidadas com a inteligência das ferramentas mais modernas de IA.`}
         actions={
           <>
-            <a href={siteConfig.links.linkedin} target="_blank" rel="noreferrer">
-              <Button>LinkedIn</Button>
-            </a>
-            <a href={siteConfig.links.youtube} target="_blank" rel="noreferrer">
-              <Button variant="outline">YouTube</Button>
-            </a>
-            <a href={siteConfig.links.tiktok} target="_blank" rel="noreferrer">
-              <Button variant="outline">TikTok</Button>
-            </a>
-            <a href={siteConfig.links.github} target="_blank" rel="noreferrer">
-              <Button variant="outline">GitHub</Button>
-            </a>
-            <a href={siteConfig.links.site} target="_blank" rel="noreferrer">
-              <Button variant="outline">Site pessoal</Button>
-            </a>
+            {aboutProfileLinks.map((link, index) => (
+              <SocialProfileButton
+                key={link.brand}
+                link={link}
+                variant={index === 0 ? "default" : "outline"}
+              />
+            ))}
           </>
         }
       />
@@ -117,23 +116,13 @@ export function AboutPage() {
             <p>
               <strong className="text-foreground">Produção de conteúdo:</strong>{" "}
               compartilho tutoriais, insights de engenharia e automação com IA no{" "}
-              <a
-                href={siteConfig.links.youtube}
-                target="_blank"
-                rel="noreferrer"
-                className="font-medium text-primary underline-offset-4 hover:underline"
-              >
+              <InlineSocialLink link={youtubeLink}>
                 YouTube (@devgalactico)
-              </a>{" "}
+              </InlineSocialLink>{" "}
               e no{" "}
-              <a
-                href={siteConfig.links.tiktok}
-                target="_blank"
-                rel="noreferrer"
-                className="font-medium text-primary underline-offset-4 hover:underline"
-              >
+              <InlineSocialLink link={tiktokLink}>
                 TikTok (@brunopelatieri)
-              </a>
+              </InlineSocialLink>
               , conectando teoria e prática para devs, empreendedores e equipes
               técnicas.
             </p>

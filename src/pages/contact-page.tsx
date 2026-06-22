@@ -1,7 +1,10 @@
-import { Mail, MapPin, Phone } from "lucide-react";
 import { ContactForm } from "@/components/contact/contact-form";
 import { PageHero } from "@/components/layout/page-hero";
-import { SocialIconLinks } from "@/components/layout/social-icon-links";
+import {
+  ContactLinksList,
+  SocialIconLinks,
+  SocialLinksList,
+} from "@/components/layout/social-icon-links";
 import {
   Card,
   CardContent,
@@ -13,12 +16,6 @@ import {
   footerSocialLinks,
 } from "@/lib/constants/contact";
 import { siteConfig } from "@/lib/constants/navigation";
-
-const channelIcons = {
-  "E-mail": Mail,
-  WhatsApp: Phone,
-  Localização: MapPin,
-} as const;
 
 export function ContactPage() {
   return (
@@ -36,37 +33,7 @@ export function ContactPage() {
                 <CardTitle>Canais diretos</CardTitle>
               </CardHeader>
               <CardContent>
-                <ul className="space-y-4 text-sm">
-                  {directContactChannels.map((channel) => {
-                    const Icon = channelIcons[channel.label as keyof typeof channelIcons];
-
-                    return (
-                      <li key={channel.label} className="flex gap-3">
-                        {Icon ? (
-                          <Icon className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-                        ) : null}
-                        <div className="min-w-0 flex-1">
-                          <p className="text-muted-foreground">{channel.label}</p>
-                          {channel.href ? (
-                            <a
-                              href={channel.href}
-                              {...(channel.external
-                                ? { target: "_blank", rel: "noreferrer" }
-                                : {})}
-                              className="block truncate font-medium text-primary transition hover:opacity-80"
-                            >
-                              {channel.value}
-                            </a>
-                          ) : (
-                            <p className="font-medium text-foreground">
-                              {channel.value}
-                            </p>
-                          )}
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ul>
+                <ContactLinksList channels={directContactChannels} />
               </CardContent>
             </Card>
 
@@ -74,10 +41,13 @@ export function ContactPage() {
               <CardHeader>
                 <CardTitle>Redes & presença online</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-5">
                 <SocialIconLinks links={footerSocialLinks} />
-                <p className="text-xs text-muted-foreground">
-                  {siteConfig.author.displayName} · {siteConfig.author.location}
+                <SocialLinksList links={footerSocialLinks} />
+                <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <span>{siteConfig.author.displayName}</span>
+                  <span aria-hidden="true">·</span>
+                  <span>{siteConfig.author.location}</span>
                 </p>
               </CardContent>
             </Card>
