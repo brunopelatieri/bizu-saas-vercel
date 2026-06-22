@@ -1,9 +1,26 @@
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { useNavigate, useSearchParams } from "react-router";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  loginSchema,
+  signupSchema,
+  type LoginFormValues,
+  type SignupFormValues,
+} from "@/lib/schemas/auth";
 import { getSupabase } from "@/lib/supabase/client";
 
 export function AuthForm() {
@@ -11,113 +28,246 @@ export function AuthForm() {
   const [searchParams] = useSearchParams();
   const nextPath = searchParams.get("next") ?? "/dashboard";
   const [mode, setMode] = useState<"login" | "signup">("login");
-  const [pending, setPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setPending(true);
-    setError(null);
-    setSuccess(null);
+  const loginForm = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: "", password: "" },
+    mode: "onChange",
+  });
 
-    const formData = new FormData(event.currentTarget);
-    const email = String(formData.get("email") ?? "").trim();
-    const password = String(formData.get("password") ?? "");
+  const signupForm = useForm<SignupFormValues>({
+    resolver: zodResolver(signupSchema),
+    defaultValues: { name: "", email: "", phone: "", password: "" },
+    mode: "onChange",
+  });
 
+  async function onLogin(values: LoginFormValues) {
     try {
       const supabase = getSupabase();
+      const { error } = await supabase.auth.signInWithPassword(values);
 
-      if (mode === "login") {
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
+      if (error) throw error;
 
-        if (signInError) throw signInError;
-        navigate(nextPath);
-        return;
-      }
+      toast.success("Login realizado com sucesso.");
+      navigate(nextPath);
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Falha ao entrar. Tente novamente.",
+      );
+    }
+  }
 
-      if (password.length < 6) {
-        throw new Error("A senha deve ter pelo menos 6 caracteres.");
-      }
-
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
+  async function onSignup(values: SignupFormValues) {
+    try {
+      const supabase = getSupabase();
+      const { data, error } = await supabase.auth.signUp({
+        email: values.email,
+        password: values.password,
+        options: {
+          data: {
+            full_name: values.name,
+            phone: values.phone,
+          },
+        },
       });
 
-      if (signUpError) throw signUpError;
+      if (error) throw error;
 
       if (data.session) {
+        toast.success("Conta criada com sucesso.");
         navigate(nextPath);
         return;
       }
 
-      setSuccess("Conta criada. Verifique seu e-mail para confirmar o cadastro.");
+      toast.success("Conta criada. Verifique seu e-mail para confirmar.");
+      setMode("login");
+      loginForm.setValue("email", values.email);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Falha na autenticação.");
-    } finally {
-      setPending(false);
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : "Falha ao criar conta. Tente novamente.",
+      );
     }
   }
 
   return (
-    <div className="w-full max-w-md">
-      <Tabs
-        value={mode}
-        onValueChange={(value) => setMode(value as "login" | "signup")}
-      >
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="login">Entrar</TabsTrigger>
-          <TabsTrigger value="signup">Criar conta</TabsTrigger>
-        </TabsList>
-        <TabsContent value={mode} className="mt-6">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">E-mail</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Senha</Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete={
-                  mode === "login" ? "current-password" : "new-password"
-                }
-                minLength={6}
-                required
-              />
-            </div>
-            {error ? (
-              <p className="text-sm text-destructive" role="alert">
-                {error}
-              </p>
-            ) : null}
-            {success ? (
-              <p className="text-sm text-emerald-400" role="status">
-                {success}
-              </p>
-            ) : null}
-            <Button type="submit" className="w-full" disabled={pending}>
-              {pending
-                ? "Aguarde..."
-                : mode === "login"
-                  ? "Entrar"
-                  : "Criar conta"}
+    <Tabs
+      value={mode}
+      onValueChange={(value) => setMode(value as "login" | "signup")}
+    >
+      <TabsList variant="line" className="grid h-10 w-full grid-cols-2 bg-transparent">
+        <TabsTrigger value="login" className="text-sm">
+          Entrar
+        </TabsTrigger>
+        <TabsTrigger value="signup" className="text-sm">
+          Cadastro
+        </TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="login" className="mt-6">
+        <Form {...loginForm}>
+          <form
+            onSubmit={loginForm.handleSubmit(onLogin)}
+            className="space-y-4"
+            noValidate
+          >
+            <FormField
+              control={loginForm.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>E-mail</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      autoComplete="email"
+                      placeholder="voce@empresa.com"
+                      className="h-10 bg-background/60"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={loginForm.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Senha</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      autoComplete="current-password"
+                      placeholder="••••••••"
+                      className="h-10 bg-background/60"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button
+              type="submit"
+              className="h-10 w-full"
+              disabled={loginForm.formState.isSubmitting}
+            >
+              {loginForm.formState.isSubmitting ? (
+                <>
+                  <Loader2 className="animate-spin" />
+                  Entrando...
+                </>
+              ) : (
+                "Entrar"
+              )}
             </Button>
           </form>
-        </TabsContent>
-      </Tabs>
-    </div>
+        </Form>
+      </TabsContent>
+
+      <TabsContent value="signup" className="mt-6">
+        <Form {...signupForm}>
+          <form
+            onSubmit={signupForm.handleSubmit(onSignup)}
+            className="space-y-4"
+            noValidate
+          >
+            <FormField
+              control={signupForm.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nome</FormLabel>
+                  <FormControl>
+                    <Input
+                      autoComplete="name"
+                      placeholder="Seu nome completo"
+                      className="h-10 bg-background/60"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={signupForm.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>E-mail</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      autoComplete="email"
+                      placeholder="voce@empresa.com"
+                      className="h-10 bg-background/60"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={signupForm.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Telefone celular</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="tel"
+                      inputMode="tel"
+                      autoComplete="tel"
+                      placeholder="(11) 99999-9999"
+                      className="h-10 bg-background/60"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={signupForm.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Senha</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      autoComplete="new-password"
+                      placeholder="Mínimo 6 caracteres"
+                      className="h-10 bg-background/60"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button
+              type="submit"
+              className="h-10 w-full"
+              disabled={signupForm.formState.isSubmitting}
+            >
+              {signupForm.formState.isSubmitting ? (
+                <>
+                  <Loader2 className="animate-spin" />
+                  Criando conta...
+                </>
+              ) : (
+                "Criar conta"
+              )}
+            </Button>
+          </form>
+        </Form>
+      </TabsContent>
+    </Tabs>
   );
 }

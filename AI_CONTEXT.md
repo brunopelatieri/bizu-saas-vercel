@@ -90,11 +90,15 @@ Se a mudança afetar agentes/LLMs, atualize também `.cursor/rules/`.
 - Hono montado em `src/server.ts` (entry Web API para Vercel Functions).
 - Blog SSR com fonte estática em `src/lib/content/posts.ts`.
 - Dashboard inicial protegido no cliente.
-- Tema dark/light com Zustand e script anti-flash.
+- TanStack Query Provider em `src/providers/query-provider.tsx` (QueryClient por instância via `useState`).
+- Login premium com tabs Login/Cadastro, react-hook-form + Zod e sonner.
+- Dashboard sidebar responsivo (desktop colapsável + mobile Sheet), avatar do usuário na base.
+- Header público responsivo (`SiteHeader`): nav inline ≥ md; mobile hamburger + Sheet à direita.
+- Tema dark/light com Zustand; **padrão dark** e script anti-flash.
 - Sonner montado globalmente.
 
 ## Pendências Técnicas Conhecidas
 
 - Evoluir blog estático para tabela Drizzle quando virar feature real.
 - Criar schemas compartilhados adicionais conforme novos forms/APIs surgirem.
-- Adicionar providers prontos para TanStack Query quando houver server state real.
+- Persistir telefone/nome do cadastro em tabela Drizzle além do `user_metadata` Supabase.

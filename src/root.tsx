@@ -9,8 +9,10 @@ import {
 } from "react-router";
 import type { LinksFunction, MetaFunction } from "react-router";
 import { AuthProvider } from "@/providers/auth-provider";
+import { QueryProvider } from "@/providers/query-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { themeInitScript } from "@/lib/theme";
 import { siteConfig } from "@/lib/constants/navigation";
 import stylesheet from "@/index.css?url";
@@ -40,7 +42,7 @@ export const meta: MetaFunction = () => [
 
 export function Layout({ children }: { children: ReactNode }) {
   return (
-    <html lang="pt-BR" suppressHydrationWarning>
+    <html lang="pt-BR" className="dark" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -60,10 +62,14 @@ export function Layout({ children }: { children: ReactNode }) {
 export default function App() {
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <Outlet />
-        <Toaster richColors closeButton position="top-right" />
-      </AuthProvider>
+      <QueryProvider>
+        <TooltipProvider>
+          <AuthProvider>
+            <Outlet />
+            <Toaster richColors closeButton position="top-right" />
+          </AuthProvider>
+        </TooltipProvider>
+      </QueryProvider>
     </ThemeProvider>
   );
 }

@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { applyTheme, resolveTheme, THEME_STORAGE_KEY, type Theme } from "@/lib/theme";
+import { applyTheme, DEFAULT_THEME, resolveTheme, THEME_STORAGE_KEY, type Theme } from "@/lib/theme";
 
 type ThemeState = {
   theme: Theme;
@@ -11,7 +11,7 @@ type ThemeState = {
 export const useThemeStore = create<ThemeState>()(
   persist(
     (set, get) => ({
-      theme: "system",
+      theme: DEFAULT_THEME,
       setTheme: (theme) => {
         set({ theme });
         applyTheme(theme);

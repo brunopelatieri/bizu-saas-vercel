@@ -1,5 +1,10 @@
 import { PageHero } from "@/components/layout/page-hero";
+import { SocialIconLinks } from "@/components/layout/social-icon-links";
 import { Button } from "@/components/ui/button";
+import {
+  contentProductionLinks,
+  experienceSummary,
+} from "@/lib/constants/contact";
 import { siteConfig } from "@/lib/constants/navigation";
 
 const focusAreas = [
@@ -36,7 +41,7 @@ const audiences = [
   },
   {
     title: "Para investidores",
-    body: "Experiência técnica sólida em tecnologias emergentes (IA, Web3, Automação) com visão de produto e execução comprovada em 18+ anos de mercado.",
+    body: `Experiência técnica sólida em tecnologias emergentes (IA, Web3, Automação) com visão de produto e execução comprovada em ${siteConfig.author.experienceYears} anos de mercado.`,
   },
   {
     title: "Para recrutadores",
@@ -53,12 +58,18 @@ export function AboutPage() {
     <>
       <PageHero
         eyebrow="Sobre"
-        title="Bruno Pelatieri Goulart"
-        description="Desenvolvedor Full Stack desde 2006. Unindo a robustez de tecnologias consolidadas com a inteligência das ferramentas mais modernas de IA."
+        title={siteConfig.author.name}
+        description={`${siteConfig.author.displayName} — Desenvolvedor Full Stack desde ${siteConfig.author.careerStart}. ${experienceSummary}. Unindo a robustez de tecnologias consolidadas com a inteligência das ferramentas mais modernas de IA.`}
         actions={
           <>
             <a href={siteConfig.links.linkedin} target="_blank" rel="noreferrer">
               <Button>LinkedIn</Button>
+            </a>
+            <a href={siteConfig.links.youtube} target="_blank" rel="noreferrer">
+              <Button variant="outline">YouTube</Button>
+            </a>
+            <a href={siteConfig.links.tiktok} target="_blank" rel="noreferrer">
+              <Button variant="outline">TikTok</Button>
             </a>
             <a href={siteConfig.links.github} target="_blank" rel="noreferrer">
               <Button variant="outline">GitHub</Button>
@@ -103,11 +114,47 @@ export function AboutPage() {
               Gemini, DeepSeek, Grok) e desenvolvimento de servidores MCP para
               conectar IA a fluxos de negócio reais.
             </p>
+            <p>
+              <strong className="text-foreground">Produção de conteúdo:</strong>{" "}
+              compartilho tutoriais, insights de engenharia e automação com IA no{" "}
+              <a
+                href={siteConfig.links.youtube}
+                target="_blank"
+                rel="noreferrer"
+                className="font-medium text-primary underline-offset-4 hover:underline"
+              >
+                YouTube (@devgalactico)
+              </a>{" "}
+              e no{" "}
+              <a
+                href={siteConfig.links.tiktok}
+                target="_blank"
+                rel="noreferrer"
+                className="font-medium text-primary underline-offset-4 hover:underline"
+              >
+                TikTok (@brunopelatieri)
+              </a>
+              , conectando teoria e prática para devs, empreendedores e equipes
+              técnicas.
+            </p>
           </div>
         </div>
       </section>
 
       <section className="border-t border-border/50 bg-muted/30 px-6 py-16">
+        <div className="mx-auto max-w-5xl">
+          <h2 className="mb-4 text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+            Conteúdo técnico
+          </h2>
+          <p className="mb-6 max-w-2xl text-sm text-muted-foreground">
+            Acompanhe novidades sobre AI Software Engineering, automação e
+            arquitetura full-stack nos canais oficiais.
+          </p>
+          <SocialIconLinks links={contentProductionLinks} />
+        </div>
+      </section>
+
+      <section className="border-t border-border/50 px-6 py-16">
         <div className="mx-auto max-w-5xl">
           <h2 className="mb-10 text-2xl font-bold tracking-tight text-foreground md:text-3xl">
             Áreas de atuação
@@ -156,11 +203,12 @@ export function AboutPage() {
       <section className="border-t border-border/50 bg-muted/30 px-6 py-16">
         <div className="mx-auto max-w-3xl text-center">
           <blockquote className="text-lg italic text-foreground md:text-xl">
-            &ldquo;Unindo 18 anos de engenharia com a inteligência do futuro —
-            construindo hoje o que o mercado precisará amanhã.&rdquo;
+            &ldquo;Unindo {siteConfig.author.experienceYears} anos de engenharia
+            com a inteligência do futuro — construindo hoje o que o mercado
+            precisará amanhã.&rdquo;
           </blockquote>
           <p className="mt-4 text-sm text-muted-foreground">
-            {siteConfig.author.role}
+            {siteConfig.author.role} · {siteConfig.author.location}
           </p>
         </div>
       </section>

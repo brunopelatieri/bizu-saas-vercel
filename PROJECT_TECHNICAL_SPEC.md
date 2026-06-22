@@ -112,7 +112,7 @@ logada simples, client-side e sem exposicao de dados no SSR.
 | Ferramenta | Uso previsto |
 |------------|--------------|
 | Zustand | Estado global leve; atualmente usado no tema |
-| TanStack Query | Server state, cache, loading/error states |
+| TanStack Query | Server state, cache, loading/error states — `QueryProvider` em `src/root.tsx` |
 | React Hook Form | Formularios performaticos |
 | Zod | Validacao compartilhavel front/back |
 | `@hookform/resolvers` | Integracao React Hook Form + Zod |
@@ -217,7 +217,7 @@ servicos server-only.
 - `src/root.tsx`
   - Define documento HTML.
   - Registra `<Meta />`, `<Links />`, `<Scripts />`, `<ScrollRestoration />`.
-  - Monta `ThemeProvider`, `AuthProvider` e `Toaster`.
+  - Monta `ThemeProvider`, `QueryProvider`, `TooltipProvider`, `AuthProvider` e `Toaster`.
   - Injeta script anti-flash para tema dark/light.
 - `src/routes.ts`
   - Configuracao declarativa das rotas.
@@ -351,6 +351,9 @@ Autenticacao atual:
 - Usa `supabase.auth.getUser()`.
 - Escuta `onAuthStateChange`.
 - `ProtectedRoute` protege `/dashboard/**` no cliente.
+- `/login`: UI premium dark-first com tabs Login/Cadastro, `react-hook-form` + Zod
+  (`src/lib/schemas/auth.ts`) e feedback via Sonner.
+- Cadastro envia `full_name` e `phone` em `user_metadata` do Supabase Auth.
 
 ---
 
@@ -406,7 +409,7 @@ Arquivos:
 
 Comportamento:
 
-- Padrao: `system`.
+- Padrao: `dark` (`DEFAULT_THEME` em `src/lib/theme.ts`).
 - Toggle alterna entre `light` e `dark`.
 - Persistencia via Zustand em `localStorage`.
 - Classe `.dark` aplicada no `<html>`.
@@ -441,6 +444,14 @@ Observacao:
 - A `BlogSection` da landing e uma vitrine/preview estatica.
 - O blog real com SSR esta em `/blog` e `/blog/:slug`.
 
+Layout publico (`src/components/layout/`):
+
+- `root-layout.tsx` — shell com header, main e footer.
+- `site-header.tsx` — header sticky responsivo.
+- `site-nav-links.tsx` — links de `navItems` com `NavLink` ativo (inline desktop / stack mobile).
+- **Desktop (≥ md):** nav inline + ThemeToggle + auth (Entrar ou Dashboard/Sair).
+- **Mobile (< md):** logo + ThemeToggle + hamburger; links e auth no `Sheet` lateral direito.
+
 ---
 
 ## 11. Dashboard/Admin
@@ -450,9 +461,12 @@ Arquivos:
 - `src/components/layout/dashboard-layout.tsx`
 - `src/components/layout/dashboard-sidebar.tsx`
 - `src/components/layout/dashboard-topbar.tsx`
+- `src/components/layout/dashboard-nav-links.tsx`
+- `src/components/layout/dashboard-user-footer.tsx`
 - `src/pages/dashboard-page.tsx`
 - `src/routes/dashboard.tsx`
 - `src/routes/dashboard.coming-soon.tsx`
+- `src/lib/constants/dashboard-nav.ts`
 
 Rotas:
 
@@ -463,13 +477,17 @@ Rotas:
 - `/dashboard/relatorios`
 - `/dashboard/configuracoes`
 
-Estado anterior:
+Estado atual:
 
-- Layout pronto com sidebar e topbar.
+- Layout responsivo inspirado no `shadcn-admin`.
+- **Desktop:** sidebar lateral fixa colapsável, tokens `sidebar-*`, avatar/menu do
+  usuario na base da sidebar.
+- **Mobile:** topbar fixa com hamburguer abrindo `Sheet` lateral com navegacao.
 - Dashboard inicial com cards zerados e quick actions.
 - Subrotas estao como "Em breve".
-- Sem `loader` de servidor; dados devem ser buscados no cliente ou via TanStack
-  Query conforme evolucao.
+- Sem `loader` de servidor; dados via TanStack Query conforme evolucao.
+- `QueryProvider` em `src/providers/query-provider.tsx` com `QueryClient` por
+  instancia (`useState`) para SSR seguro.
 
 ---
 
@@ -493,28 +511,28 @@ Detalhes:
 
 Componentes UI presentes:
 
+- `avatar`
 - `badge`
 - `button`
 - `card`
+- `dialog`
+- `dropdown-menu`
+- `form`
 - `input`
 - `label`
+- `select`
 - `separator`
+- `sheet`
+- `skeleton`
+- `sonner`
+- `table`
 - `tabs`
 - `textarea`
-- `sonner`
+- `tooltip`
 
 Componentes recomendados para proximas etapas:
 
-- `dialog`
-- `dropdown-menu`
-- `avatar`
-- `sheet`
-- `table`
-- `skeleton`
-- `form`
-- `select`
 - `checkbox`
-- `tooltip`
 - `popover`
 - `command`
 
@@ -867,13 +885,11 @@ Acao recomendada:
 
 ### Curto prazo
 
-- Adicionar shadcn components essenciais: `dialog`, `dropdown-menu`, `sheet`,
-  `table`, `form`, `select`, `skeleton`, `tooltip`, `avatar`.
 - Documentar rotina de migrations como job/pipeline separado.
+- Persistir perfil de usuario (nome/telefone) em tabela Drizzle apos cadastro.
 
 ### Medio prazo
 
-- Configurar TanStack Query Provider no `root.tsx`.
 - Criar API client tipado para Hono ou helpers de fetch padronizados.
 - Criar tabela `posts`.
 - Criar modelos `clients`, `projects`, `project_updates`, `files`.
