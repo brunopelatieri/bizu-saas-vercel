@@ -28,6 +28,7 @@ const inputClassName =
   "h-11 w-full border-border/50 bg-background/50 px-3 text-base backdrop-blur-sm transition-colors placeholder:text-muted-foreground/70 focus-visible:border-primary/50 focus-visible:ring-primary/20 md:text-sm";
 
 const formGridClassName = "grid w-full grid-cols-1 gap-4";
+const formLabelClassName = "text-white";
 
 export function AuthForm() {
   const navigate = useNavigate();
@@ -145,7 +146,7 @@ export function AuthForm() {
               name="email"
               render={({ field }) => (
                 <FormItem className="w-full">
-                  <FormLabel>E-mail</FormLabel>
+                  <FormLabel className={formLabelClassName}>E-mail</FormLabel>
                   <FormControl>
                     <Input
                       type="email"
@@ -164,7 +165,7 @@ export function AuthForm() {
               name="password"
               render={({ field }) => (
                 <FormItem className="w-full">
-                  <FormLabel>Senha</FormLabel>
+                  <FormLabel className={formLabelClassName}>Senha</FormLabel>
                   <FormControl>
                     <Input
                       type="password"
@@ -211,7 +212,7 @@ export function AuthForm() {
               name="name"
               render={({ field }) => (
                 <FormItem className="w-full">
-                  <FormLabel>Nome</FormLabel>
+                  <FormLabel className={formLabelClassName}>Nome</FormLabel>
                   <FormControl>
                     <Input
                       autoComplete="name"
@@ -229,7 +230,7 @@ export function AuthForm() {
               name="email"
               render={({ field }) => (
                 <FormItem className="w-full">
-                  <FormLabel>E-mail</FormLabel>
+                  <FormLabel className={formLabelClassName}>E-mail</FormLabel>
                   <FormControl>
                     <Input
                       type="email"
@@ -248,7 +249,7 @@ export function AuthForm() {
               name="phone"
               render={({ field }) => (
                 <FormItem className="w-full">
-                  <FormLabel>Telefone celular</FormLabel>
+                  <FormLabel className={formLabelClassName}>Telefone celular</FormLabel>
                   <FormControl>
                     <Input
                       type="tel"
@@ -268,7 +269,7 @@ export function AuthForm() {
               name="password"
               render={({ field }) => (
                 <FormItem className="w-full">
-                  <FormLabel>Senha</FormLabel>
+                  <FormLabel className={formLabelClassName}>Senha</FormLabel>
                   <FormControl>
                     <Input
                       type="password"

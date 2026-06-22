@@ -1,5 +1,6 @@
 import { PageHero } from "@/components/layout/page-hero";
 import {
+  ContactLinksList,
   InlineSocialLink,
   SocialIconLinks,
 } from "@/components/layout/social-icon-links";
@@ -7,6 +8,7 @@ import { SocialProfileButton } from "@/components/layout/social-profile-button";
 import {
   aboutProfileLinks,
   contentProductionLinks,
+  directContactChannels,
   experienceSummary,
 } from "@/lib/constants/contact";
 import { siteConfig } from "@/lib/constants/navigation";
@@ -139,7 +141,8 @@ export function AboutPage() {
             Acompanhe novidades sobre AI Software Engineering, automação e
             arquitetura full-stack nos canais oficiais.
           </p>
-          <SocialIconLinks links={contentProductionLinks} />
+          <SocialIconLinks className="mb-6" />
+          <ContactLinksList channels={directContactChannels} />
         </div>
       </section>
 
